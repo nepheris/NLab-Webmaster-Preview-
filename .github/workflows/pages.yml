@@ -24,97 +24,154 @@ jobs:
       - name: Checkout Preview repository
         uses: actions/checkout@v4
 
-      - name: Checkout Framework V2
+      - name: Checkout Web Framework history
         uses: actions/checkout@v4
         with:
           repository: nepheris/nLab-Web-Framework
           ref: New
+          fetch-depth: 0
           path: framework-source
 
-      - name: Build public Framework V2 preview
+      - name: Build and validate historical reviews
         shell: bash
         run: |
           set -euo pipefail
-          SOURCE_SHA="$(git -C framework-source rev-parse HEAD)"
-          export SOURCE_SHA
+          rm -rf _site .review-build
+          mkdir -p _site/reviews .review-build
+          cp index.html _site/index.html
+          touch _site/.nojekyll
 
-          rm -rf _site
-          mkdir -p _site
-          cp -a framework-source/dev/framework/. _site/
-          cp framework-source/dev/framework/demo/index.html _site/index.html
+          cat > .review-build/reviews.tsv <<'EOF'
+          1	17	11/08/2026 14:59	435ba2eb242c32fa37091d6cc5b6ce3d3e802d62
+          2	16	11/08/2026 14:42	de21ec85170112efb23c4d5c987502b9e49dd966
+          3	15	11/08/2026 14:40	b4261a0ea23c8bc1b36ea5c1093a2d74b320c9eb
+          4	14	11/08/2026 13:34	1c5a069fb37af0da2754c89fe4db1ca1cabf5f17
+          5	13	11/08/2026 12:31	9e2f0520bb83cc789abe51db2ec570dfd2ec759b
+          EOF
 
-          python3 - <<'PY'
-          import json
-          import os
-          from datetime import datetime, timezone
+          : > .review-build/validated.tsv
+          : > .review-build/rejected.tsv
+
+          while IFS=$'\t' read -r slot review date sha; do
+            echo "=== Review V${review} · ${sha} ==="
+            tmp=".review-build/tmp-${review}"
+            dest="_site/reviews/review-${review}"
+            rm -rf "$tmp" "$dest"
+            mkdir -p "$tmp" "$dest"
+
+            if ! git -C framework-source cat-file -e "${sha}^{commit}"; then
+              printf '%s\t%s\t%s\t%s\tcommit introuvable\n' "$slot" "$review" "$date" "$sha" >> .review-build/rejected.tsv
+              continue
+            fi
+
+            git -C framework-source archive "$sha" dev/framework | tar -x -C "$tmp"
+            src="$tmp/dev/framework"
+
+            required=(
+              demo/index.html
+              demo/demo.js
+              demo/demo.css
+              ui/base.css
+              wiz/data-wiz.js
+              wiz/qr-wiz.js
+              wiz/json-studio.js
+              components/theme-workshop.js
+            )
+            ok=1
+            for file in "${required[@]}"; do
+              if [[ ! -f "$src/$file" ]]; then
+                echo "MISSING: $file"
+                ok=0
+              fi
+            done
+
+            if [[ "$ok" -eq 1 ]]; then
+              cp -a "$src/." "$dest/"
+              cp "$src/demo/index.html" "$dest/index.html"
+
+              python3 - "$dest" "$review" "$slot" "$date" "$sha" <<'PY'
+          import re, sys
           from pathlib import Path
 
-          source_sha = os.environ['SOURCE_SHA']
-          preview_sha = os.environ['GITHUB_SHA']
-          preview_version = int(os.environ['GITHUB_RUN_NUMBER'])
-
-          path = Path('_site/index.html')
-          html = path.read_text(encoding='utf-8')
-          html = html.replace(
-              '<head>',
-              '<head>\n  <base href="./demo/">\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n  <meta http-equiv="Pragma" content="no-cache">\n  <meta http-equiv="Expires" content="0">',
-              1,
-          )
-          badge = (
-              '<div id="nlab-preview-build" '
-              'style="position:fixed;right:8px;bottom:8px;z-index:99999;'
-              'font:11px/1.2 monospace;padding:5px 7px;border:1px solid currentColor;'
-              'border-radius:6px;background:Canvas;color:CanvasText;opacity:.82">'
-              f'Preview #{preview_version} · {source_sha[:8]}</div>'
-          )
+          dest = Path(sys.argv[1])
+          review, slot, date, sha = sys.argv[2:]
+          entry = dest / 'index.html'
+          html = entry.read_text(encoding='utf-8')
+          html = html.replace('<head>', '<head>\n  <base href="./demo/">\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">', 1)
+          badge = f'<div style="position:fixed;right:8px;bottom:8px;z-index:99999;font:11px/1.2 monospace;padding:5px 7px;border:1px solid currentColor;border-radius:6px;background:Canvas;color:CanvasText;opacity:.86">Version {slot} · Review V{review} · {date} · {sha[:8]}</div>'
           html = html.replace('<body>', '<body>\n' + badge, 1)
-          path.write_text(html, encoding='utf-8')
+          entry.write_text(html, encoding='utf-8')
 
-          metadata = {
-              'preview_type': 'framework-v2-catalogue',
-              'preview_version': preview_version,
-              'framework_source_repository': 'nepheris/nLab-Web-Framework',
-              'framework_source_branch': 'New',
-              'framework_source_sha': source_sha,
-              'preview_repository_sha': preview_sha,
-              'built_at_utc': datetime.now(timezone.utc).isoformat(),
-              'public_entrypoint': '/',
-          }
-          Path('_site/PREVIEW_BUILD.json').write_text(
-              json.dumps(metadata, ensure_ascii=False, indent=2) + '\n',
-              encoding='utf-8',
-          )
-          Path('_site/PREVIEW_VERSION.txt').write_text(f'{preview_version}\n', encoding='utf-8')
+          missing=[]
+          pattern=re.compile(r"(?:import\s+(?:[^'\"]*?\s+from\s+)?|export\s+[^'\"]*?\s+from\s+)[\"']([^\"']+)[\"']|import\s*\(\s*[\"']([^\"']+)[\"']\s*\)")
+          for js in dest.rglob('*.js'):
+              text=js.read_text(encoding='utf-8')
+              for match in pattern.finditer(text):
+                  spec=match.group(1) or match.group(2)
+                  if not spec.startswith('.'):
+                      continue
+                  target=(js.parent/spec).resolve()
+                  candidates=[target]
+                  if target.suffix=='': candidates.append(Path(str(target)+'.js'))
+                  if not any(p.exists() for p in candidates):
+                      missing.append(f'{js.relative_to(dest)} -> {spec}')
+          if missing:
+              print('BROKEN IMPORTS:')
+              print('\n'.join(missing))
+              raise SystemExit(7)
           PY
 
-          touch _site/.nojekyll
-          printf '%s\n' "$SOURCE_SHA" > _site/FRAMEWORK_SOURCE_SHA.txt
+              if ! find "$dest" -type f -name '*.js' -print0 | xargs -0 -n1 node --check >/dev/null; then
+                echo "JavaScript syntax check failed for V${review}"
+                ok=0
+              fi
+            fi
 
-      - name: Verify public artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f _site/index.html
-          test -f _site/PREVIEW_BUILD.json
-          test -f _site/PREVIEW_VERSION.txt
-          test -f _site/demo/demo.js
-          test -f _site/demo/demo.css
-          test -f _site/demo/data/mixed.json
-          test -f _site/ui/base.css
-          test -f _site/wiz/renderer-wiz.js
-          test -f _site/components/theme-workshop.js
-          grep -q 'Framework V2 — Catalogue / Playground' _site/index.html
-          grep -q '<base href="./demo/">' _site/index.html
-          grep -q 'framework-v2-catalogue' _site/PREVIEW_BUILD.json
-          grep -q 'nepheris/nLab-Web-Framework' _site/PREVIEW_BUILD.json
-          grep -q 'preview_version' _site/PREVIEW_BUILD.json
-          grep -q 'Preview #' _site/index.html
-          echo '--- PREVIEW BUILD ---'
-          cat _site/PREVIEW_BUILD.json
-          echo '--- VERSION ---'
-          cat _site/PREVIEW_VERSION.txt
-          echo '--- ENTRYPOINT ---'
-          head -n 25 _site/index.html
+            if [[ "$ok" -eq 1 ]]; then
+              printf '%s\t%s\t%s\t%s\n' "$slot" "$review" "$date" "$sha" >> .review-build/validated.tsv
+            else
+              rm -rf "$dest"
+              printf '%s\t%s\t%s\t%s\tvalidation échouée\n' "$slot" "$review" "$date" "$sha" >> .review-build/rejected.tsv
+            fi
+          done < .review-build/reviews.tsv
+
+          python3 - <<'PY'
+          import html, json
+          from pathlib import Path
+
+          validated=[]
+          p=Path('.review-build/validated.tsv')
+          if p.exists():
+              for line in p.read_text(encoding='utf-8').splitlines():
+                  if not line.strip(): continue
+                  slot,review,date,sha=line.split('\t')
+                  validated.append({'slot':int(slot),'review':int(review),'date':date,'sha':sha})
+
+          cards=[]
+          for item in validated:
+              cards.append(f'''<article class="card">
+                <h2>Version {item['slot']} · Review V{item['review']}</h2>
+                <div class="meta">{html.escape(item['date'])} · commit {item['sha'][:8]}</div>
+                <div class="checks">✓ DataWiz · ✓ QRWiz · ✓ JSON Studio · ✓ Theme Workshop · ✓ JS/imports</div>
+                <div class="actions"><a href="reviews/review-{item['review']}/">Ouvrir cette version</a><a class="secondary" href="https://github.com/nepheris/nLab-Web-Framework/tree/{item['sha']}/dev/framework">Voir la source</a></div>
+              </article>''')
+
+          index=Path('_site/index.html')
+          text=index.read_text(encoding='utf-8')
+          marker='<!-- REVIEWS -->\n      <div class="empty">Le workflow de publication n\'a pas encore injecté les versions validées.</div>'
+          replacement='\n'.join(cards) if cards else '<div class="empty">Aucun des cinq reviews n\'a passé la validation automatique. Il faut reconstruire une base propre.</div>'
+          text=text.replace(marker,replacement)
+          index.write_text(text,encoding='utf-8')
+          Path('_site/VALIDATED_REVIEWS.json').write_text(json.dumps(validated,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+
+          echo '--- VALIDATED ---'
+          cat .review-build/validated.tsv || true
+          echo '--- REJECTED ---'
+          cat .review-build/rejected.tsv || true
+          test -s .review-build/validated.tsv
+          grep -q 'Ouvrir cette version' _site/index.html
+          test -f _site/VALIDATED_REVIEWS.json
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
