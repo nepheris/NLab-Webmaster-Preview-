@@ -3,14 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>NLab Webmaster Preview</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>nLab Web Framework — Reviews de diagnostic</title>
   <style>
-    body{font-family:system-ui,sans-serif;max-width:760px;margin:60px auto;padding:0 20px;line-height:1.5}
-    .ok{padding:16px;border:2px solid currentColor;border-radius:10px;font-weight:700}
+    :root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color-scheme:light dark}
+    *{box-sizing:border-box}body{margin:0;background:#0f172a;color:#e5e7eb}.wrap{max-width:1180px;margin:auto;padding:36px 22px 60px}
+    h1{font-size:clamp(1.8rem,4vw,3.2rem);margin:.2rem 0}.lead{max-width:850px;color:#cbd5e1;line-height:1.55}.status{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .7rem;border:1px solid #475569;border-radius:999px;margin:8px 0 26px}.status:before{content:'●';color:#4ade80}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{border:1px solid #334155;border-radius:14px;padding:18px;background:#111827}.card h2{margin:0 0 6px}.meta{font:12px/1.5 ui-monospace,monospace;color:#94a3b8}.checks{font-size:13px;color:#bbf7d0;margin:12px 0}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions a{display:inline-block;padding:9px 12px;border-radius:8px;text-decoration:none;background:#2563eb;color:white;font-weight:650}.actions a.secondary{background:#334155}.note{margin-top:26px;padding:14px 16px;border-left:3px solid #60a5fa;background:#172033;color:#cbd5e1}.empty{padding:24px;border:1px dashed #64748b;border-radius:12px;color:#fecaca}
   </style>
 </head>
 <body>
-  <h1>NLab Webmaster Preview</h1>
-  <p class="ok">GitHub Pages fonctionne si tu vois cette page.</p>
+  <main class="wrap">
+    <p class="meta">nLab-Webmaster-Preview · diagnostic historique</p>
+    <h1>5 derniers reviews du Web Framework</h1>
+    <p class="lead">Chaque entrée est un snapshot autonome du commit réellement publié à l'époque. L'index de production n'affiche que les snapshots qui passent les contrôles automatiques de structure, syntaxe JavaScript et dépendances locales, avec présence de DataWiz, QRWiz, JSON Studio et Theme Workshop.</p>
+    <div class="status">Snapshots validés automatiquement au déploiement</div>
+    <section class="grid" id="reviews">
+      <!-- REVIEWS -->
+      <div class="empty">Le workflow de publication n'a pas encore injecté les versions validées.</div>
+    </section>
+    <div class="note">But : identifier visuellement la dernière version saine avant de réintroduire ou recoder les évolutions suivantes. Les versions défaillantes sont volontairement exclues de cette page.</div>
+  </main>
 </body>
 </html>
