@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "keep_visible": 5,
+  "reviews": [
+    {"slot": 1, "review": 17, "date": "11/08/2026 14:59", "sha": "435ba2eb242c32fa37091d6cc5b6ce3d3e802d62", "status": "candidate"},
+    {"slot": 2, "review": 16, "date": "11/08/2026 14:42", "sha": "de21ec85170112efb23c4d5c987502b9e49dd966", "status": "reference"},
+    {"slot": 3, "review": 15, "date": "11/08/2026 14:40", "sha": "b4261a0ea23c8bc1b36ea5c1093a2d74b320c9eb", "status": "candidate"},
+    {"slot": 4, "review": 14, "date": "11/08/2026 13:34", "sha": "1c5a069fb37af0da2754c89fe4db1ca1cabf5f17", "status": "candidate"},
+    {"slot": 5, "review": 13, "date": "11/08/2026 12:31", "sha": "9e2f0520bb83cc789abe51db2ec570dfd2ec759b", "status": "candidate"}
+  ]
+}
