@@ -35,19 +35,76 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          SOURCE_SHA="$(git -C framework-source rev-parse HEAD)"
+          export SOURCE_SHA
+
           rm -rf _site
           mkdir -p _site
           cp -a framework-source/dev/framework/. _site/
           cp framework-source/dev/framework/demo/index.html _site/index.html
+
           python3 - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
           from pathlib import Path
+
+          source_sha = os.environ['SOURCE_SHA']
+          preview_sha = os.environ['GITHUB_SHA']
+
           path = Path('_site/index.html')
           html = path.read_text(encoding='utf-8')
-          html = html.replace('<head>', '<head>\n  <base href="./demo/">', 1)
+          html = html.replace(
+              '<head>',
+              '<head>\n  <base href="./demo/">\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n  <meta http-equiv="Pragma" content="no-cache">\n  <meta http-equiv="Expires" content="0">',
+              1,
+          )
+          badge = (
+              '<div id="nlab-preview-build" '
+              'style="position:fixed;right:8px;bottom:8px;z-index:99999;'
+              'font:11px/1.2 monospace;padding:5px 7px;border:1px solid currentColor;'
+              'border-radius:6px;background:Canvas;color:CanvasText;opacity:.78">'
+              f'Preview {source_sha[:8]}</div>'
+          )
+          html = html.replace('<body>', '<body>\n' + badge, 1)
           path.write_text(html, encoding='utf-8')
+
+          metadata = {
+              'preview_type': 'framework-v2-catalogue',
+              'framework_source_branch': 'New',
+              'framework_source_sha': source_sha,
+              'preview_repository_sha': preview_sha,
+              'built_at_utc': datetime.now(timezone.utc).isoformat(),
+              'public_entrypoint': '/',
+          }
+          Path('_site/PREVIEW_BUILD.json').write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
           PY
+
           touch _site/.nojekyll
-          git -C framework-source rev-parse HEAD > _site/FRAMEWORK_SOURCE_SHA.txt
+          printf '%s\n' "$SOURCE_SHA" > _site/FRAMEWORK_SOURCE_SHA.txt
+
+      - name: Verify public artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f _site/index.html
+          test -f _site/PREVIEW_BUILD.json
+          test -f _site/demo/demo.js
+          test -f _site/demo/demo.css
+          test -f _site/demo/data/mixed.json
+          test -f _site/ui/base.css
+          test -f _site/wiz/renderer-wiz.js
+          test -f _site/components/theme-workshop.js
+          grep -q 'Framework V2 — Catalogue / Playground' _site/index.html
+          grep -q '<base href="./demo/">' _site/index.html
+          grep -q 'framework-v2-catalogue' _site/PREVIEW_BUILD.json
+          echo '--- PREVIEW BUILD ---'
+          cat _site/PREVIEW_BUILD.json
+          echo '--- ENTRYPOINT ---'
+          head -n 25 _site/index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
