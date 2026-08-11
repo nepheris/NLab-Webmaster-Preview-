@@ -41,26 +41,38 @@ jobs:
           cp index.html _site/index.html
           touch _site/.nojekyll
 
-          cat > .review-build/reviews.tsv <<'EOF'
-          1	17	11/08/2026 14:59	435ba2eb242c32fa37091d6cc5b6ce3d3e802d62
-          2	16	11/08/2026 14:42	de21ec85170112efb23c4d5c987502b9e49dd966
-          3	15	11/08/2026 14:40	b4261a0ea23c8bc1b36ea5c1093a2d74b320c9eb
-          4	14	11/08/2026 13:34	1c5a069fb37af0da2754c89fe4db1ca1cabf5f17
-          5	13	11/08/2026 12:31	9e2f0520bb83cc789abe51db2ec570dfd2ec759b
-          EOF
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          registry=json.loads(Path('reviews.json').read_text(encoding='utf-8'))
+          reviews=registry.get('reviews', [])
+          keep=int(registry.get('keep_visible', 5))
+          reviews=reviews[:keep]
+          lines=[]
+          for item in reviews:
+              lines.append('\t'.join([
+                  str(item['slot']),
+                  str(item['review']),
+                  str(item['date']),
+                  str(item['sha']),
+                  str(item.get('status','candidate')),
+              ]))
+          Path('.review-build/reviews.tsv').write_text('\n'.join(lines)+'\n',encoding='utf-8')
+          PY
 
           : > .review-build/validated.tsv
           : > .review-build/rejected.tsv
 
-          while IFS=$'\t' read -r slot review date sha; do
-            echo "=== Review V${review} · ${sha} ==="
+          while IFS=$'\t' read -r slot review date sha status; do
+            echo "=== Review V${review} · ${sha} · ${status} ==="
             tmp=".review-build/tmp-${review}"
             dest="_site/reviews/review-${review}"
             rm -rf "$tmp" "$dest"
             mkdir -p "$tmp" "$dest"
 
             if ! git -C framework-source cat-file -e "${sha}^{commit}"; then
-              printf '%s\t%s\t%s\t%s\tcommit introuvable\n' "$slot" "$review" "$date" "$sha" >> .review-build/rejected.tsv
+              printf '%s\t%s\t%s\t%s\t%s\tcommit introuvable\n' "$slot" "$review" "$date" "$sha" "$status" >> .review-build/rejected.tsv
               continue
             fi
 
@@ -89,16 +101,16 @@ jobs:
               cp -a "$src/." "$dest/"
               cp "$src/demo/index.html" "$dest/index.html"
 
-              python3 - "$dest" "$review" "$slot" "$date" "$sha" <<'PY'
+              python3 - "$dest" "$review" "$slot" "$date" "$sha" "$status" <<'PY'
           import re, sys
           from pathlib import Path
 
           dest = Path(sys.argv[1])
-          review, slot, date, sha = sys.argv[2:]
+          review, slot, date, sha, status = sys.argv[2:]
           entry = dest / 'index.html'
           html = entry.read_text(encoding='utf-8')
           html = html.replace('<head>', '<head>\n  <base href="./demo/">\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">', 1)
-          badge = f'<div style="position:fixed;right:8px;bottom:8px;z-index:99999;font:11px/1.2 monospace;padding:5px 7px;border:1px solid currentColor;border-radius:6px;background:Canvas;color:CanvasText;opacity:.86">Version {slot} · Review V{review} · {date} · {sha[:8]}</div>'
+          badge = f'<div style="position:fixed;right:8px;bottom:8px;z-index:99999;font:11px/1.2 monospace;padding:5px 7px;border:1px solid currentColor;border-radius:6px;background:Canvas;color:CanvasText;opacity:.86">Version {slot} · Review V{review} · {date} · {sha[:8]} · {status}</div>'
           html = html.replace('<body>', '<body>\n' + badge, 1)
           entry.write_text(html, encoding='utf-8')
 
@@ -128,10 +140,10 @@ jobs:
             fi
 
             if [[ "$ok" -eq 1 ]]; then
-              printf '%s\t%s\t%s\t%s\n' "$slot" "$review" "$date" "$sha" >> .review-build/validated.tsv
+              printf '%s\t%s\t%s\t%s\t%s\n' "$slot" "$review" "$date" "$sha" "$status" >> .review-build/validated.tsv
             else
               rm -rf "$dest"
-              printf '%s\t%s\t%s\t%s\tvalidation échouée\n' "$slot" "$review" "$date" "$sha" >> .review-build/rejected.tsv
+              printf '%s\t%s\t%s\t%s\t%s\tvalidation échouée\n' "$slot" "$review" "$date" "$sha" "$status" >> .review-build/rejected.tsv
             fi
           done < .review-build/reviews.tsv
 
@@ -144,13 +156,14 @@ jobs:
           if p.exists():
               for line in p.read_text(encoding='utf-8').splitlines():
                   if not line.strip(): continue
-                  slot,review,date,sha=line.split('\t')
-                  validated.append({'slot':int(slot),'review':int(review),'date':date,'sha':sha})
+                  slot,review,date,sha,status=line.split('\t')
+                  validated.append({'slot':int(slot),'review':int(review),'date':date,'sha':sha,'status':status})
 
           cards=[]
           for item in validated:
+              badge=' · RÉFÉRENCE' if item['status']=='reference' else ''
               cards.append(f'''<article class="card">
-                <h2>Version {item['slot']} · Review V{item['review']}</h2>
+                <h2>Version {item['slot']} · Review V{item['review']}{badge}</h2>
                 <div class="meta">{html.escape(item['date'])} · commit {item['sha'][:8]}</div>
                 <div class="checks">✓ DataWiz · ✓ QRWiz · ✓ JSON Studio · ✓ Theme Workshop · ✓ JS/imports</div>
                 <div class="actions"><a href="reviews/review-{item['review']}/">Ouvrir cette version</a><a class="secondary" href="https://github.com/nepheris/nLab-Web-Framework/tree/{item['sha']}/dev/framework">Voir la source</a></div>
@@ -159,7 +172,7 @@ jobs:
           index=Path('_site/index.html')
           text=index.read_text(encoding='utf-8')
           marker='<!-- REVIEWS -->\n      <div class="empty">Le workflow de publication n\'a pas encore injecté les versions validées.</div>'
-          replacement='\n'.join(cards) if cards else '<div class="empty">Aucun des cinq reviews n\'a passé la validation automatique. Il faut reconstruire une base propre.</div>'
+          replacement='\n'.join(cards) if cards else '<div class="empty">Aucun review n\'a passé la validation automatique. Il faut reconstruire une base propre.</div>'
           text=text.replace(marker,replacement)
           index.write_text(text,encoding='utf-8')
           Path('_site/VALIDATED_REVIEWS.json').write_text(json.dumps(validated,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
