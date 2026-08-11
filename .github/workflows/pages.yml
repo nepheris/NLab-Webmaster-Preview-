@@ -27,7 +27,7 @@ jobs:
       - name: Checkout Framework V2
         uses: actions/checkout@v4
         with:
-          repository: nepheris/NLab-framework
+          repository: nepheris/nLab-Web-Framework
           ref: New
           path: framework-source
 
@@ -73,6 +73,7 @@ jobs:
           metadata = {
               'preview_type': 'framework-v2-catalogue',
               'preview_version': preview_version,
+              'framework_source_repository': 'nepheris/nLab-Web-Framework',
               'framework_source_branch': 'New',
               'framework_source_sha': source_sha,
               'preview_repository_sha': preview_sha,
@@ -105,6 +106,7 @@ jobs:
           grep -q 'Framework V2 — Catalogue / Playground' _site/index.html
           grep -q '<base href="./demo/">' _site/index.html
           grep -q 'framework-v2-catalogue' _site/PREVIEW_BUILD.json
+          grep -q 'nepheris/nLab-Web-Framework' _site/PREVIEW_BUILD.json
           grep -q 'preview_version' _site/PREVIEW_BUILD.json
           grep -q 'Preview #' _site/index.html
           echo '--- PREVIEW BUILD ---'
