@@ -44,19 +44,13 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-
           registry=json.loads(Path('reviews.json').read_text(encoding='utf-8'))
-          reviews=registry.get('reviews', [])
-          keep=int(registry.get('keep_visible', 5))
-          reviews=reviews[:keep]
+          reviews=registry.get('reviews', [])[:int(registry.get('keep_visible', 5))]
           lines=[]
           for item in reviews:
               lines.append('\t'.join([
-                  str(item['slot']),
-                  str(item['review']),
-                  str(item['date']),
-                  str(item['sha']),
-                  str(item.get('status','candidate')),
+                  str(item['slot']), str(item['review']), str(item['date']),
+                  str(item['sha']), str(item.get('status','historical'))
               ]))
           Path('.review-build/reviews.tsv').write_text('\n'.join(lines)+'\n',encoding='utf-8')
           PY
@@ -78,23 +72,10 @@ jobs:
 
             git -C framework-source archive "$sha" dev/framework | tar -x -C "$tmp"
             src="$tmp/dev/framework"
-
-            required=(
-              demo/index.html
-              demo/demo.js
-              demo/demo.css
-              ui/base.css
-              wiz/data-wiz.js
-              wiz/qr-wiz.js
-              wiz/json-studio.js
-              components/theme-workshop.js
-            )
+            required=(demo/index.html demo/demo.js demo/demo.css ui/base.css wiz/data-wiz.js wiz/qr-wiz.js wiz/json-studio.js components/theme-workshop.js)
             ok=1
             for file in "${required[@]}"; do
-              if [[ ! -f "$src/$file" ]]; then
-                echo "MISSING: $file"
-                ok=0
-              fi
+              [[ -f "$src/$file" ]] || { echo "MISSING: $file"; ok=0; }
             done
 
             if [[ "$ok" -eq 1 ]]; then
@@ -104,15 +85,13 @@ jobs:
               python3 - "$dest" "$review" "$slot" "$date" "$sha" "$status" <<'PY'
           import re, sys
           from pathlib import Path
-
-          dest = Path(sys.argv[1])
-          review, slot, date, sha, status = sys.argv[2:]
-          entry = dest / 'index.html'
-          html = entry.read_text(encoding='utf-8')
-          html = html.replace('<head>', '<head>\n  <base href="./demo/">\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">', 1)
-          badge = f'<div style="position:fixed;right:8px;bottom:8px;z-index:99999;font:11px/1.2 monospace;padding:5px 7px;border:1px solid currentColor;border-radius:6px;background:Canvas;color:CanvasText;opacity:.86">Version {slot} · Review V{review} · {date} · {sha[:8]} · {status}</div>'
-          html = html.replace('<body>', '<body>\n' + badge, 1)
-          entry.write_text(html, encoding='utf-8')
+          dest=Path(sys.argv[1]); review,slot,date,sha,status=sys.argv[2:]
+          entry=dest/'index.html'
+          html=entry.read_text(encoding='utf-8')
+          html=html.replace('<head>','<head>\n  <base href="./demo/">\n  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">',1)
+          badge=f'<div style="position:fixed;right:8px;bottom:8px;z-index:99999;font:11px/1.2 monospace;padding:5px 7px;border:1px solid currentColor;border-radius:6px;background:Canvas;color:CanvasText;opacity:.86">Version {slot} · Review V{review} · {date} · {sha[:8]} · {status}</div>'
+          html=html.replace('<body>','<body>\n'+badge,1)
+          entry.write_text(html,encoding='utf-8')
 
           missing=[]
           pattern=re.compile(r"(?:import\s+(?:[^'\"]*?\s+from\s+)?|export\s+[^'\"]*?\s+from\s+)[\"']([^\"']+)[\"']|import\s*\(\s*[\"']([^\"']+)[\"']\s*\)")
@@ -120,17 +99,13 @@ jobs:
               text=js.read_text(encoding='utf-8')
               for match in pattern.finditer(text):
                   spec=match.group(1) or match.group(2)
-                  if not spec.startswith('.'):
-                      continue
+                  if not spec.startswith('.'): continue
                   target=(js.parent/spec).resolve()
                   candidates=[target]
                   if target.suffix=='': candidates.append(Path(str(target)+'.js'))
-                  if not any(p.exists() for p in candidates):
-                      missing.append(f'{js.relative_to(dest)} -> {spec}')
+                  if not any(p.exists() for p in candidates): missing.append(f'{js.relative_to(dest)} -> {spec}')
           if missing:
-              print('BROKEN IMPORTS:')
-              print('\n'.join(missing))
-              raise SystemExit(7)
+              print('BROKEN IMPORTS:'); print('\n'.join(missing)); raise SystemExit(7)
           PY
 
               if ! find "$dest" -type f -name '*.js' -print0 | xargs -0 -n1 node --check >/dev/null; then
@@ -147,43 +122,15 @@ jobs:
             fi
           done < .review-build/reviews.tsv
 
-          python3 - <<'PY'
-          import html, json
-          from pathlib import Path
-
-          validated=[]
-          p=Path('.review-build/validated.tsv')
-          if p.exists():
-              for line in p.read_text(encoding='utf-8').splitlines():
-                  if not line.strip(): continue
-                  slot,review,date,sha,status=line.split('\t')
-                  validated.append({'slot':int(slot),'review':int(review),'date':date,'sha':sha,'status':status})
-
-          cards=[]
-          for item in validated:
-              badge=' · RÉFÉRENCE' if item['status']=='reference' else ''
-              cards.append(f'''<article class="card">
-                <h2>Version {item['slot']} · Review V{item['review']}{badge}</h2>
-                <div class="meta">{html.escape(item['date'])} · commit {item['sha'][:8]}</div>
-                <div class="checks">✓ DataWiz · ✓ QRWiz · ✓ JSON Studio · ✓ Theme Workshop · ✓ JS/imports</div>
-                <div class="actions"><a href="reviews/review-{item['review']}/">Ouvrir cette version</a><a class="secondary" href="https://github.com/nepheris/nLab-Web-Framework/tree/{item['sha']}/dev/framework">Voir la source</a></div>
-              </article>''')
-
-          index=Path('_site/index.html')
-          text=index.read_text(encoding='utf-8')
-          marker='<!-- REVIEWS -->\n      <div class="empty">Le workflow de publication n\'a pas encore injecté les versions validées.</div>'
-          replacement='\n'.join(cards) if cards else '<div class="empty">Aucun review n\'a passé la validation automatique. Il faut reconstruire une base propre.</div>'
-          text=text.replace(marker,replacement)
-          index.write_text(text,encoding='utf-8')
-          Path('_site/VALIDATED_REVIEWS.json').write_text(json.dumps(validated,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          PY
+          python3 build_preview.py .review-build/validated.tsv reviews.json _site/index.html _site/VALIDATED_REVIEWS.json
 
           echo '--- VALIDATED ---'
           cat .review-build/validated.tsv || true
           echo '--- REJECTED ---'
           cat .review-build/rejected.tsv || true
           test -s .review-build/validated.tsv
-          grep -q 'Ouvrir cette version' _site/index.html
+          grep -q 'Ouvrir la review' _site/index.html
+          grep -q 'data-toggle-review' _site/index.html
           test -f _site/VALIDATED_REVIEWS.json
 
       - name: Configure Pages
