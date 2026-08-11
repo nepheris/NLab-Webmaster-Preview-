@@ -1,11 +1,88 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "keep_visible": 5,
   "reviews": [
-    {"slot": 1, "review": 20, "date": "11/08/2026 23:41", "sha": "b4abdbd1e90abeb31ddfb56d3309ebf57f657daf", "status": "candidate"},
-    {"slot": 2, "review": 17, "date": "11/08/2026 14:59", "sha": "435ba2eb242c32fa37091d6cc5b6ce3d3e802d62", "status": "regression"},
-    {"slot": 3, "review": 16, "date": "11/08/2026 14:42", "sha": "de21ec85170112efb23c4d5c987502b9e49dd966", "status": "reference"},
-    {"slot": 4, "review": 15, "date": "11/08/2026 14:40", "sha": "b4261a0ea23c8bc1b36ea5c1093a2d74b320c9eb", "status": "candidate"},
-    {"slot": 5, "review": 14, "date": "11/08/2026 13:34", "sha": "1c5a069fb37af0da2754c89fe4db1ca1cabf5f17", "status": "candidate"}
+    {
+      "slot": 1,
+      "review": 20,
+      "date": "11/08/2026 23:41",
+      "sha": "b4abdbd1e90abeb31ddfb56d3309ebf57f657daf",
+      "status": "in_progress",
+      "default_visible": true,
+      "label": "V20 — reconstruction depuis V16",
+      "summary": "Candidate isolée : Scope Lab + Layout Lab, sans remplacer la référence V16.",
+      "points": [
+        {"name": "Socle V16", "status": "validated"},
+        {"name": "CodeBlock — niveau actuel", "status": "validated"},
+        {"name": "QRWiz — fonctions principales", "status": "partial"},
+        {"name": "Scope Lab famille/type/instance", "status": "to_validate"},
+        {"name": "Layout Lab header/footer", "status": "to_validate"},
+        {"name": "Header générique dérivé MVola", "status": "planned"},
+        {"name": "TableWiz dérivé des anciens tableaux", "status": "planned"},
+        {"name": "JSON Studio / relations", "status": "planned"}
+      ]
+    },
+    {
+      "slot": 2,
+      "review": 17,
+      "date": "11/08/2026 14:59",
+      "sha": "435ba2eb242c32fa37091d6cc5b6ce3d3e802d62",
+      "status": "regression",
+      "default_visible": false,
+      "label": "V17 — régression constatée",
+      "summary": "Conservée pour comparaison historique ; ne pas utiliser comme base.",
+      "points": [
+        {"name": "Publication / structure", "status": "auto"},
+        {"name": "Theme Workshop", "status": "issue"},
+        {"name": "Validation humaine globale", "status": "rejected"}
+      ]
+    },
+    {
+      "slot": 3,
+      "review": 16,
+      "date": "11/08/2026 14:42",
+      "sha": "de21ec85170112efb23c4d5c987502b9e49dd966",
+      "status": "reference",
+      "default_visible": false,
+      "label": "V16 — référence fonctionnelle",
+      "summary": "Dernière version déclarée fonctionnelle lors du contrôle humain du 11/08/2026.",
+      "points": [
+        {"name": "Socle / navigation générale", "status": "validated"},
+        {"name": "CodeBlock", "status": "validated"},
+        {"name": "QRWiz", "status": "partial"},
+        {"name": "TableWiz", "status": "partial"},
+        {"name": "JSON Studio", "status": "partial"},
+        {"name": "Theme Workshop", "status": "partial"},
+        {"name": "Floating / Inspector Panel", "status": "issue"}
+      ]
+    },
+    {
+      "slot": 4,
+      "review": 15,
+      "date": "11/08/2026 14:40",
+      "sha": "b4261a0ea23c8bc1b36ea5c1093a2d74b320c9eb",
+      "status": "historical",
+      "default_visible": false,
+      "label": "V15 — historique",
+      "summary": "Snapshot antérieur conservé pour diagnostic et comparaison.",
+      "points": [
+        {"name": "Contrôles automatiques", "status": "auto"},
+        {"name": "Validation humaine détaillée", "status": "unknown"}
+      ]
+    },
+    {
+      "slot": 5,
+      "review": 14,
+      "date": "11/08/2026 13:34",
+      "sha": "1c5a069fb37af0da2754c89fe4db1ca1cabf5f17",
+      "status": "historical",
+      "default_visible": false,
+      "label": "V14 — historique",
+      "summary": "Snapshot antérieur conservé pour diagnostic et comparaison.",
+      "points": [
+        {"name": "Contrôles automatiques", "status": "auto"},
+        {"name": "Validation humaine détaillée", "status": "unknown"}
+      ]
+    }
   ]
 }
