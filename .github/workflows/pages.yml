@@ -264,7 +264,7 @@ jobs:
           ok=0
           for attempt in 1 2 3 4; do
             echo "Public Chrome smoke attempt ${attempt}/4"
-            if timeout 25s google-chrome --headless=new --no-sandbox --disable-dev-shm-usage --virtual-time-budget=6000 --dump-dom "${PREVIEW_URL}?ci=${GITHUB_SHA}" > .review-build/public-dom.html 2> .review-build/chrome.log; then
+            if timeout 25s google-chrome --headless=new --no-sandbox --disable-dev-shm-usage --enable-logging=stderr --log-level=0 --virtual-time-budget=6000 --dump-dom "${PREVIEW_URL}?ci=${GITHUB_SHA}" > .review-build/public-dom.html 2> .review-build/chrome.log; then
               if grep -q 'nLab Webmaster Preview · V2.4' .review-build/public-dom.html \
                 && grep -q 'class="project-card"' .review-build/public-dom.html \
                 && grep -q 'lighthouse-version-link' .review-build/public-dom.html \

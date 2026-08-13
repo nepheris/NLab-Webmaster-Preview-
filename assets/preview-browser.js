@@ -5,6 +5,13 @@ const CACHE_KEY='nlab-preview-api-cache-v1';
 const TTL_MS=5*60*1000;
 const MAX_CONCURRENT=2;
 const nativeFetch=window.fetch.bind(window);
+function reportBootFailure(message){
+ const status=document.getElementById('statusText');
+ if(status){status.dataset.kind='bad';status.textContent=`Erreur de démarrage : ${message}`;status.title=status.textContent}
+ document.documentElement.dataset.previewBoot='failed';
+}
+window.addEventListener('error',event=>{if(/preview-browser-core/.test(event.filename||'')||event.message)reportBootFailure(event.message||'script principal indisponible')});
+window.addEventListener('unhandledrejection',event=>reportBootFailure(event.reason?.message||String(event.reason||'promesse rejetée')));
 let active=0, forceUntil=0;
 const queue=[];
 function readCache(){try{return JSON.parse(localStorage.getItem(CACHE_KEY)||'{}')}catch{return {}}}
@@ -29,5 +36,5 @@ window.fetch=async(input,init={})=>{
  });
 };
 document.addEventListener('click',e=>{if(e.target.closest?.('#refreshBtn'))forceUntil=Date.now()+15000},{capture:true});
-const core=document.createElement('script');core.src='assets/preview-browser-core.js';core.defer=false;document.head.appendChild(core);
+const core=document.createElement('script');core.src='assets/preview-browser-core.js';core.defer=false;core.addEventListener('load',()=>{document.documentElement.dataset.previewBoot='loaded'});core.addEventListener('error',()=>reportBootFailure('preview-browser-core.js indisponible'));document.head.appendChild(core);
 })();
