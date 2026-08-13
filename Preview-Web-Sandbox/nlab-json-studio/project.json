@@ -1,7 +1,7 @@
 {
   "project_id": "nlab-json-studio",
   "display_name": "nLab JSON Studio",
-  "description": "Éditeur JSON multi-vues nLab — hotfix performance publié pour réduire les recalculs DOM lors des changements de vue.",
+  "description": "Éditeur JSON multi-vues nLab — audit performance appliqué au Studio et garde réseau ajouté au Webmaster Preview.",
   "repository": "nepheris/nLab-Web-Framework",
   "production": null,
   "visual": {
@@ -10,7 +10,7 @@
   },
   "preview_status": {
     "state": "testing",
-    "label": "Preview v0.6.1-performance — hotfix navigation/rendu à valider visuellement"
+    "label": "Preview v0.7-performance-audit — candidate optimisée à valider visuellement"
   },
   "source": {
     "issue": "https://github.com/nepheris/nLab-Web-Framework/issues/57",
