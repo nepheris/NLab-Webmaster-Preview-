@@ -16,10 +16,12 @@ assert(core.includes('lighthouseVersionLink'),'Per-version Lighthouse action mis
 assert(core.includes("audit.searchParams.set('url',target)"),'Lighthouse target URL must be computed lazily without fetching');
 assert(core.includes("document.dispatchEvent(new CustomEvent('nlab:save-request'"),'Explicit save event missing');
 assert(!sandbox.includes('trySync()'),'Automatic sandbox sync call remains');
+assert(sandbox.includes('button.onclick=async()=>'),'Sandbox catalog must load only after an explicit click');
+assert(!/function init\(\)\{[^}]*loadCatalog/.test(sandbox),'Sandbox catalog still loads during startup');
 assert(sandbox.includes("document.addEventListener('nlab:save-request',handleSaveRequest)"),'Manual batch listener missing');
 assert((sandbox.match(/fetch\(syncUrl/g)||[]).length===1,'Expected exactly one browser sync request site');
 assert(sandbox.includes("localStorage.setItem(BATCH_KEY"),'Local batch queue missing');
 assert(!github.includes('setTimeout(()=>{paintVersion();renderCenter()}'),'Automatic repeated auth render remains');
 assert(github.includes("event.target.closest?.('#v14GithubCenter')"),'Lazy GitHub center initialization missing');
 
-console.log(JSON.stringify({status:'PASS',snapshotBoot:true,automaticSync:false,browserSyncSites:1,manualTreeRefresh:true,perVersionLighthouse:true}));
+console.log(JSON.stringify({status:'PASS',snapshotBoot:true,automaticSync:false,browserSyncSites:1,manualTreeRefresh:true,perVersionLighthouse:true,lazySandbox:true,minimalStartup:true}));

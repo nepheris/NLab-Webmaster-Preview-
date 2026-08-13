@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 
-const VERSION='V2.2';
+const VERSION='V2.3';
 const CATALOG_URL='assets/config/sandbox-features.json';
 const AUTH_URL='assets/config/private-data-auth.json';
 const STORE_KEY='nlab-preview-sandbox-reviews-v1';
@@ -97,12 +97,12 @@ function installButton(){
   const toolbar=q('.toolbar');if(!toolbar||q('#sandboxCenterBtn'))return;
   const button=document.createElement('button');button.id='sandboxCenterBtn';button.className='btn sandbox-center-btn';button.type='button';button.innerHTML=`${icon()}<span>Bac à sable</span><span class="sandbox-count"></span>`;
   const github=q('#v14GithubCenter');github?toolbar.insertBefore(button,github):toolbar.appendChild(button);
-  button.onclick=()=>{const panel=makePanel();panel.hidden=false;renderBook();renderFeature(currentFeature||catalog.features[0]?.id)};paintPending();
+  button.onclick=async()=>{const panel=makePanel();panel.hidden=false;if(!catalog.features.length)await loadCatalog();renderBook();renderFeature(currentFeature||catalog.features[0]?.id)};paintPending();
 }
 async function loadCatalog(){
   try{const response=await fetch(`${CATALOG_URL}?v=${Date.now()}`,{cache:'no-store'});if(!response.ok)throw new Error(`HTTP ${response.status}`);catalog=await response.json();currentFeature=catalog.features[0]?.id||null}catch(error){catalog={categories:[],features:[]};const host=q('#sandboxWork');if(host)host.innerHTML=`<div class="sandbox-empty">Catalogue indisponible : ${esc(error.message)}</div>`}
 }
 function paintVersion(){const badge=q('.v14-version');if(badge)badge.textContent=VERSION;const foot=q('.foot');if(foot)foot.innerHTML=`<span class="v14-foot-version">nLab Webmaster Preview · ${VERSION}</span> · Preview, POC et validation.`}
-async function init(){paintVersion();makePanel();installButton();await loadCatalog();renderBook();if(currentFeature)renderFeature(currentFeature);document.addEventListener('nlab:save-request',handleSaveRequest);setTimeout(()=>{paintVersion();installButton()},500)}
+function init(){paintVersion();installButton();document.addEventListener('nlab:save-request',handleSaveRequest);setTimeout(()=>{paintVersion();installButton()},500)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
