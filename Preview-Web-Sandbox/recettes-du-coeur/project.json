@@ -3,6 +3,11 @@
   "display_name": "Les Recettes du Cœur",
   "description": "Site public Les Recettes du Cœur.",
   "repository": "recettesducoeur/recettesducoeur.github.io",
+  "visual": {
+    "type": "image",
+    "url": "https://recettesducoeur.github.io/assets/images/logos/favicon.png",
+    "source": "production-favicon"
+  },
   "production": {
     "status": "production",
     "label": "Site public en production",
