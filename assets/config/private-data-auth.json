@@ -13,5 +13,6 @@
   "logout_url": "",
   "session_transport": "http-only-secure-samesite-cookie",
   "default_mode": "public",
-  "authenticated_mode": "extended"
+  "authenticated_mode": "extended",
+  "feedback_sync_url": ""
 }

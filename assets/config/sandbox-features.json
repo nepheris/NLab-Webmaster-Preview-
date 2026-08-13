@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "updated_at": "2026-08-13T09:20:00Z",
+  "categories": [
+    {"id": "github", "label": "GitHub"},
+    {"id": "governance", "label": "Gouvernance"}
+  ],
+  "features": [
+    {
+      "id": "github-dual-mode",
+      "category": "github",
+      "name": "Modes GitHub public et authentifié",
+      "version": "V1.9",
+      "status": "testing",
+      "summary": "Centre GitHub séparant la consultation publique rapide et la future session authentifiée étendue.",
+      "acceptance": [
+        "Le mode public est actif par défaut.",
+        "Aucune requête GitHub API n'est déclenchée par la navigation locale.",
+        "Le mode authentifié reste verrouillé tant que la passerelle OAuth n'est pas configurée."
+      ],
+      "previews": [
+        {"label": "Centre GitHub V1.9", "url": "./", "kind": "page"}
+      ]
+    },
+    {
+      "id": "sandbox-center",
+      "category": "governance",
+      "name": "Centre Bac à sable",
+      "version": "V2.0",
+      "status": "poc",
+      "summary": "Classeur de POC permettant d'examiner les fonctionnalités, conserver les décisions et préparer leur synchronisation.",
+      "acceptance": [
+        "Chaque fonctionnalité possède une fiche et ses rendus.",
+        "Les décisions et instructions sont conservées dans le navigateur.",
+        "Une file d'attente prépare la synchronisation authentifiée future."
+      ],
+      "previews": [
+        {"label": "Centre Bac à sable intégré", "url": "./", "kind": "page"}
+      ]
+    }
+  ],
+  "dictionnaire_donnees": {
+    "schema_version": "Version du catalogue fonctionnel.",
+    "categories": "Rubriques du classeur Bac à sable.",
+    "features": "Fonctionnalités ou POC proposés à la validation humaine.",
+    "acceptance": "Critères observables pour valider le POC.",
+    "previews": "Rendus consultables associés à la fonctionnalité."
+  }
+}
