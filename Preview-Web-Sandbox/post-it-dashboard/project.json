@@ -1,0 +1,17 @@
+{
+  "project_id": "post-it-dashboard",
+  "display_name": "Dashboard Post-it",
+  "description": "Dashboard de pilotage des Post-it et TODO : KPI, matrice d'Eisenhower, filtres temporels, vues tableau, cartes et focus.",
+  "repository": "nepheris/nLab",
+  "visual": {
+    "type": "nlab",
+    "label": "nLab"
+  },
+  "production": null,
+  "preview_status": {
+    "state": "to_review",
+    "label": "Dashboard Post-it V0.5 à valider",
+    "candidate_maturity": "mvp",
+    "validation_effect": "Après validation HUMAN, le dashboard devient MVP et sa priorité peut être réduite au profit des projets à terminer."
+  }
+}

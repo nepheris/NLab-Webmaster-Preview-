@@ -1,0 +1,1982 @@
+<!doctype html>
+<html lang="fr" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Dashboard Post-it · V0.5 · nLab Webmaster Preview</title>
+<style>:root {
+  color-scheme: light dark;
+  background-color: transparent !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --main-surface-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: light-dark(rgb(26 28 31), rgb(255 255 255));
+  --card: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --card-foreground: var(--foreground);
+  --popover: light-dark(rgb(255 255 255), rgb(45 45 45));
+  --popover-foreground: var(--foreground);
+  --primary: light-dark(rgb(51 156 255), rgb(131 195 255));
+  --primary-foreground: light-dark(rgb(255 255 255), rgb(13 13 13));
+  --secondary: light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%));
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: light-dark(
+    rgb(26 28 31 / 49.4%),
+    rgb(255 255 255 / 49.8%)
+  );
+  --accent: light-dark(rgb(229 242 255), rgb(13 39 63));
+  --accent-foreground: var(--primary);
+  --destructive: light-dark(rgb(226 85 7), rgb(255 133 73));
+  --border: light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%));
+  --input: light-dark(
+    rgb(26 28 31 / 11.8%),
+    color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+  );
+  --ring: light-dark(rgb(51 156 255), rgb(131 195 255 / 76%));
+  --font-size-base: 14px;
+  --red: light-dark(rgb(186 38 35), rgb(250 66 62));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: 10px;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 17'%3E%3Cpath d='M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z'/%3E%3C/svg%3E");
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+  --color-background-primary: var(--background);
+  --color-text-primary: var(--foreground);
+  --color-border-secondary: var(--border);
+}
+
+:root[data-visualize-standalone] {
+  background-color: var(--background) !important;
+}
+
+/* Generic mobile code-block hosts provide light/dark mode but no series palette.
+   AppBlock hosts set all six variables themselves. */
+:root:not([data-app-block-surface]) {
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(#f3883b, #f59a56);
+  --viz-series-3: light-dark(#5dc977, #74d58b);
+  --viz-series-4: light-dark(#eb77b1, #f08fc0);
+  --viz-series-5: light-dark(#9b79ec, #aa91ef);
+  --viz-series-6: light-dark(#3ab9b1, #5acbc2);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html > body {
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+:root:not([data-app-block-surface]) > body {
+  padding: 12px;
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive > .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align="right"]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align="center"]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget > :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The bundled tooltip runtime owns [data-tooltip]. AppBlock's CSS-only
+   pseudo-tooltip can widen dense grids even while hidden. */
+main [data-tooltip]::after {
+  content: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls > .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls > .form-label > :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--interactive-label-primary-default, var(--primary-foreground));
+  background: var(--interactive-bg-primary-default, var(--foreground));
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(
+    in srgb,
+    var(--interactive-label-primary-default, var(--primary-foreground)) 50%,
+    transparent
+  );
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type="file"] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type="file"]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type="file"]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type="color"] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type="color"]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type="checkbox"]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type="checkbox"]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: "";
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type="radio"]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: "";
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed="true"],
+    [aria-selected="true"],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed="true"], [aria-selected="true"], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget > svg {
+  width: 100%;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+</style>
+</head>
+<body>
+<section id="post-it-dashboard-v05">
+  <style>
+    #post-it-dashboard-v05 .quadrant-a { background: color-mix(in srgb, var(--viz-series-4) 18%, transparent); }
+    #post-it-dashboard-v05 .quadrant-b { background: color-mix(in srgb, var(--viz-series-2) 18%, transparent); }
+    #post-it-dashboard-v05 .quadrant-c { background: color-mix(in srgb, var(--viz-series-3) 18%, transparent); }
+    #post-it-dashboard-v05 .quadrant-d { background: color-mix(in srgb, var(--muted) 55%, transparent); }
+    #post-it-dashboard-v05 .due-cell[data-due-status="NO_DUE"] { background: color-mix(in srgb, var(--muted) 45%, transparent); }
+    #post-it-dashboard-v05 .due-cell[data-due-status="SCHEDULED"] { background: color-mix(in srgb, var(--viz-series-1) 14%, transparent); }
+    #post-it-dashboard-v05 .due-cell[data-due-status="DUE_SOON"],
+    #post-it-dashboard-v05 .due-cell[data-due-status="DUE_NOW"] { background: color-mix(in srgb, var(--viz-series-2) 18%, transparent); }
+    #post-it-dashboard-v05 .due-cell[data-due-status="OVERDUE"] { background: color-mix(in srgb, var(--destructive) 18%, transparent); }
+    #post-it-dashboard-v05 .due-cell[data-due-status="DONE"] { background: color-mix(in srgb, var(--green) 16%, transparent); }
+    #post-it-dashboard-v05 .post-id { background: color-mix(in srgb, var(--viz-series-1) 14%, transparent); }
+    #post-it-dashboard-v05 [hidden] { display: none; }
+    #post-it-dashboard-v05 .section-summary,
+    #post-it-dashboard-v05 .section-heading,
+    #post-it-dashboard-v05 .summary-metrics,
+    #post-it-dashboard-v05 .temporal-filters,
+    #post-it-dashboard-v05 .axis-columns,
+    #post-it-dashboard-v05 .axis-rows { display: flex; align-items: center; gap: 8px; }
+    #post-it-dashboard-v05 .section-summary { justify-content: space-between; flex-wrap: wrap; }
+    #post-it-dashboard-v05 .summary-metrics,
+    #post-it-dashboard-v05 .temporal-filters { flex-wrap: wrap; }
+    #post-it-dashboard-v05 .mini-quadrant { min-width: 62px; text-align: center; }
+    #post-it-dashboard-v05 .mini-quadrant strong { margin-inline-start: 4px; }
+    #post-it-dashboard-v05 .eisenhower-layout {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(280px, 1fr));
+      gap: 24px;
+      align-items: stretch;
+      padding-block: 12px;
+    }
+    #post-it-dashboard-v05 .matrix-with-axes {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 10px;
+      width: min(100%, 400px);
+      margin-inline: auto;
+    }
+    #post-it-dashboard-v05 .axis-columns { grid-column: 2; grid-row: 1; display: grid; grid-template-columns: 1fr 1fr; text-align: center; }
+    #post-it-dashboard-v05 .axis-rows { grid-column: 1; grid-row: 2; display: grid; grid-template-rows: 1fr 1fr; }
+    #post-it-dashboard-v05 .axis-rows span { writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
+    #post-it-dashboard-v05 #eisenhower-grid {
+      grid-column: 2;
+      grid-row: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      aspect-ratio: 1;
+      width: 100%;
+      gap: 8px;
+    }
+    #post-it-dashboard-v05 #eisenhower-grid .btn { min-height: 124px; }
+    #post-it-dashboard-v05 .matrix-tile-content {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+    }
+    #post-it-dashboard-v05 .matrix-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    #post-it-dashboard-v05 .matrix-copy { display: block; text-align: center; }
+    #post-it-dashboard-v05 .matrix-count { display: block; text-align: center; }
+    #post-it-dashboard-v05 .compact-table { min-width: 820px; table-layout: fixed; }
+    #post-it-dashboard-v05 .compact-table th { position: relative; }
+    #post-it-dashboard-v05 .column-resizer {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: -4px;
+      width: 8px;
+      cursor: col-resize;
+      touch-action: none;
+    }
+    #post-it-dashboard-v05 .two-line { display: block; }
+    #post-it-dashboard-v05 .two-line-secondary { display: block; }
+    #post-it-dashboard-v05 #pending-bar { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+    #post-it-dashboard-v05 #eisenhower-reference { align-self: stretch; }
+    #post-it-dashboard-v05 .reference-accent { background: color-mix(in srgb, var(--viz-series-6) 16%, transparent); }
+    #post-it-dashboard-v05 .reference-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      width: min(100%, 400px);
+      aspect-ratio: 1;
+      margin-inline: auto;
+      padding-block: 12px;
+    }
+    #post-it-dashboard-v05 .reference-item { display: grid; align-content: center; gap: 6px; padding: 12px; }
+    #post-it-dashboard-v05 .reference-item strong { display: block; }
+    #post-it-dashboard-v05 .temporal-filter[data-temporal="NO_DUE"] { background: color-mix(in srgb, var(--muted) 45%, transparent); }
+    #post-it-dashboard-v05 .temporal-filter[data-temporal="SCHEDULED"] { background: color-mix(in srgb, var(--viz-series-1) 14%, transparent); }
+    #post-it-dashboard-v05 .temporal-filter[data-temporal="DUE_SOON"] { background: color-mix(in srgb, var(--viz-series-2) 18%, transparent); }
+    #post-it-dashboard-v05 .temporal-filter[data-temporal="OVERDUE"] { background: color-mix(in srgb, var(--destructive) 18%, transparent); }
+    @media (max-width: 760px) {
+      #post-it-dashboard-v05 .viz-stat-value { display: inline; }
+      #post-it-dashboard-v05 #eisenhower-grid .btn { min-height: 104px; }
+      #post-it-dashboard-v05 .eisenhower-layout { grid-template-columns: 1fr; }
+      #post-it-dashboard-v05 .matrix-with-axes { width: min(100%, 350px); }
+      #post-it-dashboard-v05 .reference-grid { width: min(100%, 350px); }
+      #post-it-dashboard-v05 .summary-metrics { width: 100%; }
+      #post-it-dashboard-v05 .mini-quadrant { min-width: 54px; }
+      #post-it-dashboard-v05 .compact-table { min-width: 650px; }
+      #post-it-dashboard-v05 .action-col,
+      #post-it-dashboard-v05 .status-col { display: none; }
+      #post-it-dashboard-v05 .conversation-compact { padding-block: 0; }
+    }
+  </style>
+
+  <details open id="dashboard-overview">
+    <summary>KPI</summary>
+    <div class="viz-grid" aria-label="Indicateurs des Post-it">
+      <div class="card viz-stat">
+        <span>Post-it ouverts</span>
+        <strong class="viz-stat-value" id="stat-open">0</strong>
+        <span class="text-small" id="stat-open-detail">0 simple · 0 TODO</span>
+      </div>
+      <div class="card viz-stat">
+        <span>Priorité dominante</span>
+        <strong class="viz-stat-value" id="stat-priority">—</strong>
+        <span class="text-small" id="stat-priority-detail">Aucun élément</span>
+      </div>
+      <div class="card viz-stat">
+        <span>Échéances · retards</span>
+        <strong class="viz-stat-value" id="stat-due">0 · 0</strong>
+        <span class="text-small">Planifiées · dépassées</span>
+      </div>
+      <div class="card viz-stat">
+        <span>Revues quotidiennes</span>
+        <strong class="viz-stat-value">3</strong>
+        <span class="text-small">08:00 · 13:00 · 19:00</span>
+      </div>
+    </div>
+
+  </details>
+
+  <details open id="eisenhower-section">
+    <summary class="section-summary">
+      <span>Matrice d'Eisenhower · <strong id="eisenhower-total">0</strong> Post-it</span>
+      <span class="summary-metrics" aria-label="Répartition synthétique A à D">
+        <span class="viz-badge mini-quadrant quadrant-a">A · P1 <strong id="summary-count-p1">0</strong></span>
+        <span class="viz-badge mini-quadrant quadrant-b">B · P2 <strong id="summary-count-p2">0</strong></span>
+        <span class="viz-badge mini-quadrant quadrant-c">C · P3 <strong id="summary-count-p3">0</strong></span>
+        <span class="viz-badge mini-quadrant quadrant-d">D · P4 <strong id="summary-count-p4">0</strong></span>
+      </span>
+    </summary>
+    <div class="eisenhower-layout">
+      <div class="matrix-with-axes">
+        <div class="axis-columns text-small" aria-hidden="true"><span>Urgent</span><span>Pas urgent</span></div>
+        <div class="axis-rows text-small" aria-hidden="true"><span>Important</span><span>Pas important</span></div>
+        <div id="eisenhower-grid" aria-label="Matrice d'Eisenhower : urgent à gauche, pas urgent à droite, important en haut, pas important en bas">
+          <button class="btn viz-tile quadrant-a" type="button" data-priority="P1" aria-label="Filtrer sur A, important et urgent">
+            <span class="matrix-tile-content"><span class="matrix-top"><strong>A</strong><strong>P1</strong></span><strong class="viz-stat-value matrix-count" id="count-p1">0</strong><span class="text-small matrix-copy">Agir maintenant</span></span>
+          </button>
+          <button class="btn viz-tile quadrant-b" type="button" data-priority="P2" aria-label="Filtrer sur B, important et non urgent">
+            <span class="matrix-tile-content"><span class="matrix-top"><strong>B</strong><strong>P2</strong></span><strong class="viz-stat-value matrix-count" id="count-p2">0</strong><span class="text-small matrix-copy">Planifier</span></span>
+          </button>
+          <button class="btn viz-tile quadrant-c" type="button" data-priority="P3" aria-label="Filtrer sur C, urgent et peu important">
+            <span class="matrix-tile-content"><span class="matrix-top"><strong>C</strong><strong>P3</strong></span><strong class="viz-stat-value matrix-count" id="count-p3">0</strong><span class="text-small matrix-copy">Simplifier ou déléguer</span></span>
+          </button>
+          <button class="btn viz-tile quadrant-d" type="button" data-priority="P4" aria-label="Filtrer sur D, ni important ni urgent">
+            <span class="matrix-tile-content"><span class="matrix-top"><strong>D</strong><strong>P4</strong></span><strong class="viz-stat-value matrix-count" id="count-p4">0</strong><span class="text-small matrix-copy">Conserver ou archiver</span></span>
+          </button>
+        </div>
+      </div>
+      <details open id="eisenhower-reference">
+        <summary><span class="viz-badge reference-accent">Référentiel Eisenhower</span></summary>
+        <div class="reference-grid">
+          <div class="reference-item quadrant-a"><strong>A · P1</strong><span class="text-small">Important et urgent</span><span>Agir maintenant</span></div>
+          <div class="reference-item quadrant-b"><strong>B · P2</strong><span class="text-small">Important et pas urgent</span><span>Planifier et protéger du temps</span></div>
+          <div class="reference-item quadrant-c"><strong>C · P3</strong><span class="text-small">Pas important et urgent</span><span>Simplifier ou déléguer</span></div>
+          <div class="reference-item quadrant-d"><strong>D · P4</strong><span class="text-small">Pas important et pas urgent</span><span>Conserver ou archiver</span></div>
+        </div>
+      </details>
+    </div>
+  </details>
+
+  <details open id="pilotage-section">
+    <summary>Pilotage des Post-it</summary>
+
+  <div class="viz-controls" aria-label="Modes d'affichage">
+    <button class="btn btn-primary" type="button" data-display="table" aria-pressed="true">
+      <i data-lucide="table-2" aria-hidden="true"></i> Tableau
+    </button>
+    <button class="btn" type="button" data-display="cards" aria-pressed="false">
+      <i data-lucide="layout-grid" aria-hidden="true"></i> Cartes
+    </button>
+    <button class="btn" type="button" data-display="focus" aria-pressed="false">
+      <i data-lucide="scan" aria-hidden="true"></i> Focus
+    </button>
+  </div>
+
+  <details id="advanced-controls">
+    <summary><i data-lucide="sliders-horizontal" aria-hidden="true"></i> Recherche, filtres et paramètres avancés</summary>
+    <div class="viz-controls" aria-label="Recherche et données">
+      <label class="form-label" for="post-search">Recherche
+        <input class="form-control" id="post-search" type="search" placeholder="ID, titre, texte, tag…">
+      </label>
+      <label class="form-label" for="json-file">Registre JSON
+        <input class="form-control" id="json-file" type="file" accept="application/json,.json">
+      </label>
+      <button class="btn" id="export-json" type="button">
+        <i data-lucide="download" aria-hidden="true"></i> Exporter JSON
+      </button>
+    </div>
+
+    <div class="viz-controls" aria-label="Filtres des Post-it">
+      <label class="form-label" for="filter-mode">Mode
+        <select class="form-select" id="filter-mode"></select>
+      </label>
+      <label class="form-label" for="filter-theme">Thème
+        <select class="form-select" id="filter-theme"></select>
+      </label>
+      <label class="form-label" for="filter-priority">Priorité
+        <select class="form-select" id="filter-priority"></select>
+      </label>
+      <label class="form-label" for="filter-status">État
+        <select class="form-select" id="filter-status"></select>
+      </label>
+    </div>
+  </details>
+
+  <div class="temporal-filters" aria-label="Filtres d'échéance">
+    <button class="btn viz-tile temporal-filter" type="button" data-temporal="NO_DUE" aria-pressed="true">➖ Sans échéance <strong id="temporal-count-no-due">0</strong></button>
+    <button class="btn viz-tile temporal-filter" type="button" data-temporal="SCHEDULED" aria-pressed="true">📅 Planifiée <strong id="temporal-count-scheduled">0</strong></button>
+    <button class="btn viz-tile temporal-filter" type="button" data-temporal="DUE_SOON" aria-pressed="true">⏳ Zone de rappel <strong id="temporal-count-due-soon">0</strong></button>
+    <button class="btn viz-tile temporal-filter" type="button" data-temporal="OVERDUE" aria-pressed="true">⚠️ Dépassée <strong id="temporal-count-overdue">0</strong></button>
+  </div>
+
+  <div class="card viz-row" id="pending-bar" hidden aria-live="polite">
+    <span><strong id="pending-count">0</strong> modification en attente</span>
+    <button class="btn btn-primary" id="apply-pending" type="button">Actualiser la vue</button>
+    <button class="btn btn-ghost" id="discard-pending" type="button">Annuler</button>
+  </div>
+
+  <details open id="table-view">
+    <summary>Post-it ouverts — vue compacte</summary>
+    <div class="table-responsive">
+      <table class="table table-sm compact-table" aria-label="État courant des Post-it">
+        <thead>
+          <tr>
+            <th class="status-col" scope="col"><button class="btn btn-ghost" type="button" data-sort="status" data-label="État">État</button><span class="column-resizer" data-resize-column aria-hidden="true"></span></th>
+            <th scope="col"><button class="btn btn-ghost" type="button" data-sort="title" data-label="Post-it">Post-it</button><span class="column-resizer" data-resize-column aria-hidden="true"></span></th>
+            <th scope="col"><button class="btn btn-ghost" type="button" data-sort="mode" data-label="Mode">Mode</button><span class="column-resizer" data-resize-column aria-hidden="true"></span></th>
+            <th scope="col"><button class="btn btn-ghost" type="button" data-sort="theme" data-label="Thème">Thème</button><span class="column-resizer" data-resize-column aria-hidden="true"></span></th>
+            <th scope="col"><button class="btn btn-ghost" type="button" data-sort="priority" data-label="Priorité">Priorité</button><span class="column-resizer" data-resize-column aria-hidden="true"></span></th>
+            <th scope="col"><button class="btn btn-ghost" type="button" data-sort="due" data-label="Échéance">Échéance</button><span class="column-resizer" data-resize-column aria-hidden="true"></span></th>
+            <th class="action-col" scope="col">Action recommandée<span class="column-resizer" data-resize-column aria-hidden="true"></span></th>
+          </tr>
+        </thead>
+        <tbody id="post-it-rows"></tbody>
+      </table>
+    </div>
+    <p class="text-small" id="sort-status">Tri : Post-it A–Z</p>
+  </details>
+
+  <details open id="cards-view" hidden>
+    <summary>Cartes Post-it</summary>
+    <div class="viz-grid" id="post-it-cards" aria-label="Vue en cartes"></div>
+  </details>
+
+  <details open id="focus-view" hidden>
+    <summary>Focus et clusters</summary>
+    <label class="form-label" for="focus-group">Regrouper les Post-it
+      <select class="form-select" id="focus-group">
+        <option value="type">Par type</option>
+        <option value="theme">Par thème</option>
+      </select>
+    </label>
+    <div id="focus-clusters"></div>
+    <div class="card" id="focus-card" aria-live="polite"></div>
+  </details>
+
+  <p class="text-small" id="post-it-count" aria-live="polite"></p>
+
+  <form class="card" id="post-it-editor" hidden>
+    <div class="viz-row">
+      <strong id="editor-title">Configurer le Post-it</strong>
+      <code class="post-id" id="editor-id"></code>
+    </div>
+    <div class="viz-controls">
+      <label class="form-label" for="editor-status">État
+        <select class="form-select" id="editor-status">
+          <option value="active">Actif</option>
+          <option value="backlog">À faire plus tard</option>
+          <option value="in_progress">En cours</option>
+          <option value="blocked">Bloqué</option>
+          <option value="done">Fait</option>
+          <option value="cancelled">Annulé</option>
+          <option value="archived">Archivé</option>
+        </select>
+      </label>
+      <label class="form-label" for="editor-mode">Mode
+        <select class="form-select" id="editor-mode">
+          <option value="post_it">Post-it</option>
+          <option value="todo">TODO</option>
+        </select>
+      </label>
+      <label class="form-label" for="editor-theme">Thème
+        <select class="form-select" id="editor-theme"></select>
+      </label>
+      <label class="form-label" for="editor-important">Important
+        <select class="form-select" id="editor-important">
+          <option value="null">À qualifier</option>
+          <option value="true">Oui</option>
+          <option value="false">Non</option>
+        </select>
+      </label>
+      <label class="form-label" for="editor-urgent">Urgent
+        <select class="form-select" id="editor-urgent">
+          <option value="null">À qualifier</option>
+          <option value="true">Oui</option>
+          <option value="false">Non</option>
+        </select>
+      </label>
+      <label class="form-label" for="editor-due">Échéance
+        <input class="form-control" id="editor-due" type="datetime-local">
+      </label>
+      <label class="form-label" for="editor-reminder">Rappel
+        <select class="form-select" id="editor-reminder">
+          <option value="system_default">Rappel système</option>
+          <option value="custom">Personnalisé</option>
+          <option value="none">Aucun</option>
+        </select>
+      </label>
+      <label class="form-label" for="editor-next-reminder">Prochain rappel
+        <input class="form-control" id="editor-next-reminder" type="datetime-local">
+      </label>
+      <label class="form-check form-switch" for="editor-pinned">
+        <input class="form-check-input" id="editor-pinned" type="checkbox">
+        <span class="form-check-label">Épinglé</span>
+      </label>
+    </div>
+    <div class="viz-row">
+      <button class="btn btn-primary" type="submit">Appliquer dans la maquette</button>
+      <button class="btn" id="clear-due" type="button">Effacer l'échéance</button>
+      <button class="btn btn-ghost" id="close-editor" type="button">Fermer</button>
+    </div>
+  </form>
+  </details>
+</section>
+
+<script>
+(() => {
+  const root = document.getElementById("post-it-dashboard-v05");
+  const now = () => new Date();
+  const labels = {
+    mode: { post_it: "Post-it simple", todo: "TODO" },
+    status: {
+      active: "Actif",
+      backlog: "À faire plus tard",
+      in_progress: "En cours",
+      blocked: "Bloqué",
+      done: "Fait",
+      cancelled: "Annulé",
+      archived: "Archivé"
+    },
+    due: {
+      NO_DUE: "Sans échéance",
+      SCHEDULED: "Planifiée",
+      DUE_SOON: "Zone de rappel",
+      DUE_NOW: "À échéance",
+      OVERDUE: "Dépassée",
+      RECURRING: "Récurrente",
+      DONE: "Fait"
+    },
+    dueIcon: { NO_DUE: "➖", SCHEDULED: "📅", DUE_SOON: "⏳", DUE_NOW: "⏰", OVERDUE: "⚠️", RECURRING: "🔁", DONE: "✅" },
+    priority: {
+      P1: "A · P1 — Important et urgent",
+      P2: "B · P2 — Important, non urgent",
+      P3: "C · P3 — Urgent, peu important",
+      P4: "D · P4 — Ni important ni urgent",
+      PX: "PX — À qualifier"
+    }
+  };
+
+  const seedData = {
+    nlab_meta: { artifact_id: "NLAB-POST-IT", version: "0.10-draft", timezone: "Europe/Paris" },
+    system_defaults: { digest_windows: [{ local_time: "08:00" }, { local_time: "13:00" }, { local_time: "19:00" }] },
+    theme_registry: [
+      { theme_id: "THM-GENERAL", label: "Général" },
+      { theme_id: "THM-NLAB", label: "nLab" },
+      { theme_id: "THM-GOVERNANCE", label: "Gouvernance" }
+    ],
+    post_its: [
+      {
+        id: "PST-001", mode: "post_it", title: "Review des TODO",
+        body: "Examiner les TODO ouverts, détecter les doublons, dépendances, blocages et obsolescences, puis proposer les priorités.",
+        status: "active", pinned: true, post_it_type: "review", theme_id: "THM-GOVERNANCE", tags: ["review", "todo", "governance"],
+        assessment: { important: true, urgent: false, mandatory: false },
+        priority: { code: "P2", order: 2, label: "Important, non urgent", emoji: "🟠" },
+        todo: null, schedule: { mode: "none", due_at: null, recurrence: null, next_occurrence_at: null },
+        reminders: { mode: "system_default", pre_alerts: [], next_reminder_at: null, snoozed_until: null }
+      },
+      {
+        id: "PST-002", mode: "post_it", title: "Review des sujets ouverts",
+        body: "Examiner les discussions, arbitrages, projets et digressions commencés mais non explicitement clôturés, puis identifier la prochaine action.",
+        status: "active", pinned: true, post_it_type: "review", theme_id: "THM-GOVERNANCE", tags: ["review", "open_threads", "governance"],
+        assessment: { important: true, urgent: false, mandatory: false },
+        priority: { code: "P2", order: 2, label: "Important, non urgent", emoji: "🟠" },
+        todo: null, schedule: { mode: "none", due_at: null, recurrence: null, next_occurrence_at: null },
+        reminders: { mode: "system_default", pre_alerts: [], next_reminder_at: null, snoozed_until: null }
+      },
+      {
+        id: "PST-003", mode: "todo", title: "Créer le registre des artefacts de gouvernance",
+        body: "Définir un registre distinct de rules.json pour les standards, conventions, templates, procédures, guides et bonnes pratiques.",
+        status: "backlog", pinned: false, post_it_type: "action", theme_id: "THM-GOVERNANCE", tags: ["governance", "registry"],
+        assessment: { important: true, urgent: false, mandatory: false },
+        priority: { code: "P2", order: 2, label: "Important, non urgent", emoji: "🟠" },
+        todo: { definition_of_done: "Structure, dictionnaire de données et relation aux règles validés.", progress_percent: 0 },
+        schedule: { mode: "none", due_at: null, recurrence: null, next_occurrence_at: null },
+        reminders: { mode: "system_default", pre_alerts: [], next_reminder_at: null, snoozed_until: null }
+      },
+      {
+        id: "PST-004", mode: "post_it", title: "Créer une interface de suivi des Post-it",
+        body: "Concevoir une interface alimentée par post-it.json avec dashboard, vues, filtres, échéances et configuration des Post-it.",
+        status: "active", pinned: false, post_it_type: "idea", theme_id: "THM-NLAB", tags: ["nLab", "idea", "dashboard"],
+        assessment: { important: true, urgent: false, mandatory: false },
+        priority: { code: "P2", order: 2, label: "Important, non urgent", emoji: "🟠" },
+        todo: null, schedule: { mode: "none", due_at: null, recurrence: null, next_occurrence_at: null },
+        reminders: { mode: "system_default", pre_alerts: [], next_reminder_at: null, snoozed_until: null }
+      }
+    ]
+  };
+
+  const state = {
+    data: structuredClone(seedData),
+    display: "table",
+    sortKey: "id",
+    sortDirection: 1,
+    selectedId: "PST-001",
+    pending: new Map(),
+    temporalGroups: new Set(["NO_DUE", "SCHEDULED", "DUE_SOON", "OVERDUE"]),
+    filters: { search: "", mode: "all", theme: "all", priority: "all", status: "all" }
+  };
+
+  const byId = (id) => root.querySelector("#" + id);
+  const themeLabel = (id) => state.data.theme_registry.find((theme) => theme.theme_id === id)?.label || id || "Général";
+
+  function derivePriority(item) {
+    const important = item.assessment?.important;
+    const urgent = item.assessment?.urgent;
+    if (important === null || urgent === null || important === undefined || urgent === undefined) return "PX";
+    if (important && urgent) return "P1";
+    if (important && !urgent) return "P2";
+    if (!important && urgent) return "P3";
+    return "P4";
+  }
+
+  function dueStatus(item) {
+    if (item.status === "done") return "DONE";
+    const dueAt = item.schedule?.due_at;
+    if (!dueAt) return item.schedule?.mode === "recurring" ? "RECURRING" : "NO_DUE";
+    const due = new Date(dueAt);
+    if (Number.isNaN(due.getTime())) return "NO_DUE";
+    const diff = due.getTime() - now().getTime();
+    if (diff < 0) return "OVERDUE";
+    if (diff <= 30 * 60 * 1000) return "DUE_NOW";
+    const nextReminder = item.reminders?.next_reminder_at ? new Date(item.reminders.next_reminder_at) : null;
+    if (nextReminder && !Number.isNaN(nextReminder.getTime()) && now() >= nextReminder) return "DUE_SOON";
+    if (diff <= 24 * 60 * 60 * 1000) return "DUE_SOON";
+    return "SCHEDULED";
+  }
+
+  function temporalGroup(item) {
+    const code = dueStatus(item);
+    if (code === "RECURRING") return "SCHEDULED";
+    if (code === "DUE_NOW") return "DUE_SOON";
+    if (code === "DONE") return null;
+    return code;
+  }
+
+  function priorityAction(code) {
+    return { P1: "Agir maintenant", P2: "Planifier et protéger du temps", P3: "Simplifier ou déléguer", P4: "Conserver ou archiver", PX: "Qualifier" }[code];
+  }
+
+  function formatDate(value) {
+    if (!value) return "Sans échéance";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Sans échéance";
+    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" }).format(date);
+  }
+
+  function normalizeItem(item) {
+    item.assessment ||= { important: null, urgent: null, mandatory: false };
+    item.priority ||= {};
+    item.priority.code = derivePriority(item);
+    item.priority.order = { P1: 1, P2: 2, P3: 3, P4: 4, PX: 99 }[item.priority.code];
+    item.priority.label = labels.priority[item.priority.code];
+    item.priority.emoji = { P1: "🔴", P2: "🟠", P3: "🟡", P4: "⚪", PX: "🟣" }[item.priority.code];
+    item.schedule ||= { mode: "none", due_at: null, recurrence: null, next_occurrence_at: null };
+    item.reminders ||= { mode: "system_default", pre_alerts: [], next_reminder_at: null, snoozed_until: null };
+    item.tags ||= [];
+    return item;
+  }
+
+  function setOptions(select, options) {
+    const current = select.value || "all";
+    select.replaceChildren(...options.map((option) => {
+      const node = document.createElement("option");
+      node.value = option.value;
+      node.textContent = option.label + " (" + option.count + ")";
+      return node;
+    }));
+    select.value = options.some((option) => option.value === current) ? current : "all";
+  }
+
+  function updateFilterOptions(items) {
+    setOptions(byId("filter-mode"), [
+      { value: "all", label: "Tous les modes", count: items.length },
+      { value: "post_it", label: "Post-it simples", count: items.filter((item) => item.mode === "post_it").length },
+      { value: "todo", label: "TODO", count: items.filter((item) => item.mode === "todo").length }
+    ]);
+    setOptions(byId("filter-theme"), [
+      { value: "all", label: "Tous les thèmes", count: items.length },
+      ...state.data.theme_registry.map((theme) => ({ value: theme.theme_id, label: theme.label, count: items.filter((item) => item.theme_id === theme.theme_id).length }))
+    ]);
+    setOptions(byId("filter-priority"), [
+      { value: "all", label: "Toutes les priorités", count: items.length },
+      ...["P1", "P2", "P3", "P4", "PX"].map((code) => ({ value: code, label: labels.priority[code], count: items.filter((item) => item.priority.code === code).length }))
+    ]);
+    setOptions(byId("filter-status"), [
+      { value: "all", label: "Tous les états", count: items.length },
+      ...["active", "backlog", "in_progress", "blocked", "done", "cancelled", "archived"].map((code) => ({ value: code, label: labels.status[code], count: items.filter((item) => item.status === code).length }))
+    ]);
+  }
+
+  function filteredItems() {
+    const term = state.filters.search.trim().toLocaleLowerCase("fr");
+    return state.data.post_its.filter((item) => {
+      const haystack = [item.id, item.title, item.body, themeLabel(item.theme_id), ...(item.tags || [])].join(" ").toLocaleLowerCase("fr");
+      return (!term || haystack.includes(term)) &&
+        (state.filters.mode === "all" || item.mode === state.filters.mode) &&
+        (state.filters.theme === "all" || item.theme_id === state.filters.theme) &&
+        (state.filters.priority === "all" || item.priority.code === state.filters.priority) &&
+        (temporalGroup(item) === null || state.temporalGroups.has(temporalGroup(item))) &&
+        (state.filters.status === "all" || item.status === state.filters.status);
+    });
+  }
+
+  function sortValue(item, key) {
+    if (key === "theme") return themeLabel(item.theme_id);
+    if (key === "priority") return item.priority.order;
+    if (key === "due") return item.schedule?.due_at || "9999";
+    return item[key] ?? "";
+  }
+
+  function sortedItems(items) {
+    return [...items].sort((a, b) => String(sortValue(a, state.sortKey)).localeCompare(String(sortValue(b, state.sortKey)), "fr", { numeric: true }) * state.sortDirection);
+  }
+
+  function updateMetrics(items) {
+    const open = items.filter((item) => !["done", "cancelled", "archived"].includes(item.status));
+    const simpleCount = open.filter((item) => item.mode === "post_it").length;
+    const todoCount = open.filter((item) => item.mode === "todo").length;
+    byId("stat-open").textContent = open.length;
+    byId("stat-open-detail").textContent = simpleCount + " simples · " + todoCount + " TODO";
+    const priorityCounts = ["P1", "P2", "P3", "P4", "PX"].map((code) => ({ code, count: open.filter((item) => item.priority.code === code).length }));
+    const dominant = priorityCounts.sort((a, b) => b.count - a.count || ["P1", "P2", "P3", "P4", "PX"].indexOf(a.code) - ["P1", "P2", "P3", "P4", "PX"].indexOf(b.code))[0];
+    byId("stat-priority").textContent = dominant?.count ? labels.priority[dominant.code].split(" — ")[0] : "—";
+    byId("stat-priority-detail").textContent = dominant?.count ? dominant.count + " élément(s)" : "Aucun élément";
+    const scheduled = open.filter((item) => item.schedule?.due_at).length;
+    const overdue = open.filter((item) => dueStatus(item) === "OVERDUE").length;
+    byId("stat-due").textContent = scheduled + " · " + overdue;
+    ["P1", "P2", "P3", "P4"].forEach((code) => {
+      const count = open.filter((item) => item.priority.code === code).length;
+      byId("count-" + code.toLowerCase()).textContent = count;
+      byId("summary-count-" + code.toLowerCase()).textContent = count;
+    });
+    byId("eisenhower-total").textContent = open.length;
+    const temporalCounts = { NO_DUE: 0, SCHEDULED: 0, DUE_SOON: 0, OVERDUE: 0 };
+    open.forEach((item) => {
+      const group = temporalGroup(item);
+      if (group && Object.hasOwn(temporalCounts, group)) temporalCounts[group] += 1;
+    });
+    byId("temporal-count-no-due").textContent = temporalCounts.NO_DUE;
+    byId("temporal-count-scheduled").textContent = temporalCounts.SCHEDULED;
+    byId("temporal-count-due-soon").textContent = temporalCounts.DUE_SOON;
+    byId("temporal-count-overdue").textContent = temporalCounts.OVERDUE;
+  }
+
+  function openEditor(id) {
+    const item = state.pending.get(id) || state.data.post_its.find((entry) => entry.id === id);
+    if (!item) return;
+    state.selectedId = id;
+    byId("editor-id").textContent = item.id;
+    byId("editor-title").textContent = item.title;
+    byId("editor-status").value = item.status;
+    byId("editor-mode").value = item.mode;
+    byId("editor-theme").value = item.theme_id;
+    byId("editor-important").value = String(item.assessment?.important ?? null);
+    byId("editor-urgent").value = String(item.assessment?.urgent ?? null);
+    byId("editor-due").value = item.schedule?.due_at ? item.schedule.due_at.slice(0, 16) : "";
+    byId("editor-reminder").value = item.reminders?.mode || "system_default";
+    byId("editor-next-reminder").value = item.reminders?.next_reminder_at ? item.reminders.next_reminder_at.slice(0, 16) : "";
+    byId("editor-pinned").checked = Boolean(item.pinned);
+    byId("post-it-editor").hidden = false;
+  }
+
+  function itemButton(item) {
+    const button = document.createElement("button");
+    button.className = "btn viz-tile";
+    button.type = "button";
+    button.dataset.openId = item.id;
+    button.setAttribute("aria-label", "Ouvrir " + item.id + ", " + item.title);
+    const pin = item.pinned ? "📌 " : "";
+    button.textContent = pin + item.id + " · " + item.title;
+    return button;
+  }
+
+  function renderTable(items) {
+    const rows = byId("post-it-rows");
+    rows.replaceChildren(...items.map((item) => {
+      const tr = document.createElement("tr");
+      const due = dueStatus(item);
+
+      const statusCell = document.createElement("td");
+      statusCell.className = "status-col";
+      statusCell.textContent = labels.status[item.status] || item.status;
+
+      const titleCell = document.createElement("th");
+      titleCell.scope = "row";
+      const openButton = document.createElement("button");
+      openButton.className = "btn btn-ghost";
+      openButton.type = "button";
+      openButton.dataset.openId = item.id;
+      openButton.setAttribute("aria-label", "Configurer " + item.id);
+      const titleLine = document.createElement("span");
+      titleLine.className = "two-line";
+      titleLine.textContent = (item.pinned ? "📌 " : "") + item.title;
+      const id = document.createElement("code");
+      id.className = "post-id two-line-secondary";
+      id.textContent = item.id;
+      openButton.append(titleLine, id);
+      const icon = document.createElement("i");
+      icon.dataset.lucide = "settings-2";
+      icon.setAttribute("aria-hidden", "true");
+      openButton.appendChild(icon);
+      titleCell.appendChild(openButton);
+
+      const modeCell = document.createElement("td");
+      const modeIcon = document.createElement("span");
+      modeIcon.className = "two-line";
+      modeIcon.textContent = item.mode === "todo" ? (item.status === "done" ? "☑" : "☐") : "📝";
+      const modeText = document.createElement("span");
+      modeText.className = "two-line-secondary text-small";
+      modeText.textContent = item.mode === "todo" ? "TODO" : "Post-it";
+      modeCell.append(modeIcon, modeText);
+
+      const themeCell = document.createElement("td");
+      themeCell.textContent = themeLabel(item.theme_id);
+
+      const priorityCell = document.createElement("td");
+      priorityCell.textContent = item.priority.emoji + " " + labels.priority[item.priority.code];
+
+      const dueCell = document.createElement("td");
+      dueCell.className = "due-cell";
+      dueCell.dataset.dueStatus = due;
+      dueCell.textContent = labels.dueIcon[due] + " " + labels.due[due] + (item.schedule?.due_at ? " · " + formatDate(item.schedule.due_at) : "");
+
+      const actionCell = document.createElement("td");
+      actionCell.className = "action-col";
+      actionCell.textContent = priorityAction(item.priority.code);
+
+      tr.append(statusCell, titleCell, modeCell, themeCell, priorityCell, dueCell, actionCell);
+      return tr;
+    }));
+  }
+
+  function renderCards(items) {
+    byId("post-it-cards").replaceChildren(...items.map(itemButton));
+  }
+
+  function renderFocus(items) {
+    const groupMode = byId("focus-group").value;
+    const groups = new Map();
+    items.forEach((item) => {
+      const group = groupMode === "theme" ? themeLabel(item.theme_id) : item.post_it_type || "memo";
+      if (!groups.has(group)) groups.set(group, []);
+      groups.get(group).push(item);
+    });
+    const clusterRoot = byId("focus-clusters");
+    clusterRoot.replaceChildren(...[...groups.entries()].map(([name, entries]) => {
+      const section = document.createElement("section");
+      const heading = document.createElement("h3");
+      heading.textContent = name + " (" + entries.length + ")";
+      const grid = document.createElement("div");
+      grid.className = "viz-grid";
+      grid.replaceChildren(...entries.map(itemButton));
+      section.append(heading, grid);
+      return section;
+    }));
+    const selected = items.find((item) => item.id === state.selectedId) || items[0];
+    const focusCard = byId("focus-card");
+    if (!selected) {
+      focusCard.textContent = "Aucun Post-it sélectionné";
+      return;
+    }
+    state.selectedId = selected.id;
+    const due = dueStatus(selected);
+    focusCard.replaceChildren();
+    const heading = document.createElement("strong");
+    heading.textContent = selected.title;
+    const metadata = document.createElement("p");
+    metadata.textContent = selected.id + " · " + themeLabel(selected.theme_id) + " · " + labels.priority[selected.priority.code] + " · " + labels.due[due];
+    const body = document.createElement("p");
+    body.textContent = selected.body || "";
+    const edit = document.createElement("button");
+    edit.className = "btn";
+    edit.type = "button";
+    edit.dataset.openId = selected.id;
+    edit.textContent = "Configurer";
+    focusCard.append(heading, metadata, body, edit);
+  }
+
+  function render() {
+    state.data.post_its.forEach(normalizeItem);
+    const currentEditorTheme = byId("editor-theme").value;
+    byId("editor-theme").replaceChildren(...state.data.theme_registry.map((theme) => {
+      const option = document.createElement("option");
+      option.value = theme.theme_id;
+      option.textContent = theme.label;
+      return option;
+    }));
+    if (state.data.theme_registry.some((theme) => theme.theme_id === currentEditorTheme)) byId("editor-theme").value = currentEditorTheme;
+    updateFilterOptions(state.data.post_its);
+    Object.entries({ mode: "filter-mode", theme: "filter-theme", priority: "filter-priority", status: "filter-status" }).forEach(([key, id]) => {
+      byId(id).value = state.filters[key];
+    });
+    const visible = sortedItems(filteredItems());
+    updateMetrics(state.data.post_its);
+    renderTable(visible);
+    renderCards(visible);
+    renderFocus(visible);
+    byId("table-view").hidden = state.display !== "table";
+    byId("cards-view").hidden = state.display !== "cards";
+    byId("focus-view").hidden = state.display !== "focus";
+    byId("post-it-count").textContent = visible.length + (visible.length > 1 ? " éléments affichés sur " : " élément affiché sur ") + state.data.post_its.length;
+    root.querySelectorAll("[data-display]").forEach((button) => {
+      const active = button.dataset.display === state.display;
+      button.setAttribute("aria-pressed", String(active));
+      button.classList.toggle("btn-primary", active);
+    });
+    root.querySelectorAll("[data-temporal]").forEach((button) => {
+      const active = state.temporalGroups.has(button.dataset.temporal);
+      button.setAttribute("aria-pressed", String(active));
+      button.classList.toggle("btn-primary", active);
+    });
+    root.querySelectorAll("[data-sort]").forEach((button) => {
+      const active = button.dataset.sort === state.sortKey;
+      const direction = active && state.sortDirection < 0 ? "Z–A" : "A–Z";
+      button.setAttribute("aria-pressed", String(active));
+      button.textContent = button.dataset.label + (active ? " · " + direction : "");
+      const icon = document.createElement("i");
+      icon.dataset.lucide = active && state.sortDirection < 0 ? "arrow-down-z-a" : "arrow-down-a-z";
+      icon.setAttribute("aria-hidden", "true");
+      button.appendChild(icon);
+    });
+    const sortLabel = root.querySelector('[data-sort="' + state.sortKey + '"]')?.dataset.label || "Post-it";
+    byId("sort-status").textContent = "Tri actif : " + sortLabel + " " + (state.sortDirection < 0 ? "Z–A" : "A–Z");
+    if (globalThis.lucide) globalThis.lucide.createIcons({ attrs: { width: 16, height: 16 } });
+  }
+
+  function updatePendingBar() {
+    const count = state.pending.size;
+    byId("pending-count").textContent = count;
+    byId("pending-bar").hidden = count === 0;
+  }
+
+  function applyPendingChanges() {
+    state.pending.forEach((pendingItem, id) => {
+      const index = state.data.post_its.findIndex((item) => item.id === id);
+      if (index >= 0) state.data.post_its[index] = structuredClone(pendingItem);
+    });
+    state.pending.clear();
+    updatePendingBar();
+    render();
+  }
+
+  root.addEventListener("click", (event) => {
+    const displayButton = event.target.closest("[data-display]");
+    if (displayButton) {
+      state.display = displayButton.dataset.display;
+      render();
+      return;
+    }
+    const priorityButton = event.target.closest("[data-priority]");
+    if (priorityButton) {
+      state.filters.priority = priorityButton.dataset.priority;
+      render();
+      return;
+    }
+    const temporalButton = event.target.closest("[data-temporal]");
+    if (temporalButton) {
+      const code = temporalButton.dataset.temporal;
+      if (state.temporalGroups.has(code)) state.temporalGroups.delete(code);
+      else state.temporalGroups.add(code);
+      render();
+      return;
+    }
+    const sortButton = event.target.closest("[data-sort]");
+    if (sortButton) {
+      const key = sortButton.dataset.sort;
+      state.sortDirection = state.sortKey === key ? state.sortDirection * -1 : 1;
+      state.sortKey = key;
+      render();
+      return;
+    }
+    const openButton = event.target.closest("[data-open-id]");
+    if (openButton) {
+      state.selectedId = openButton.dataset.openId;
+      openEditor(state.selectedId);
+      if (state.display === "focus") renderFocus(filteredItems());
+    }
+  });
+
+  let searchTimer = null;
+  byId("post-search").addEventListener("input", (event) => {
+    clearTimeout(searchTimer);
+    const value = event.target.value;
+    searchTimer = setTimeout(() => { state.filters.search = value; render(); }, 180);
+  });
+  ["mode", "theme", "priority", "status"].forEach((key) => {
+    byId("filter-" + key).addEventListener("change", (event) => { state.filters[key] = event.target.value; render(); });
+  });
+  byId("focus-group").addEventListener("change", () => renderFocus(filteredItems()));
+
+  byId("json-file").addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        if (!Array.isArray(data.post_its)) throw new Error("post_its manquant");
+        state.data = data;
+        state.data.theme_registry ||= seedData.theme_registry;
+        state.selectedId = state.data.post_its[0]?.id || null;
+        render();
+      } catch (error) {
+        byId("post-it-count").textContent = "JSON invalide : " + error.message;
+      }
+    });
+    reader.readAsText(file);
+  });
+
+  byId("export-json").addEventListener("click", () => {
+    if (state.pending.size) applyPendingChanges();
+    const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "post-it.json";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+
+  byId("post-it-editor").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const source = state.pending.get(state.selectedId) || state.data.post_its.find((entry) => entry.id === state.selectedId);
+    if (!source) return;
+    const item = structuredClone(source);
+    const parseBoolean = (value) => value === "null" ? null : value === "true";
+    item.status = byId("editor-status").value;
+    item.mode = byId("editor-mode").value;
+    item.theme_id = byId("editor-theme").value;
+    item.assessment.important = parseBoolean(byId("editor-important").value);
+    item.assessment.urgent = parseBoolean(byId("editor-urgent").value);
+    item.pinned = byId("editor-pinned").checked;
+    const dueValue = byId("editor-due").value;
+    item.schedule.mode = dueValue ? "once" : "none";
+    item.schedule.due_at = dueValue ? new Date(dueValue).toISOString() : null;
+    item.reminders.mode = byId("editor-reminder").value;
+    const reminderValue = byId("editor-next-reminder").value;
+    item.reminders.next_reminder_at = reminderValue ? new Date(reminderValue).toISOString() : null;
+    if (item.mode === "todo" && !item.todo) item.todo = { definition_of_done: null, progress_percent: 0 };
+    if (item.mode === "post_it") item.todo = null;
+    normalizeItem(item);
+    state.pending.set(item.id, item);
+    updatePendingBar();
+  });
+
+  byId("clear-due").addEventListener("click", () => {
+    byId("editor-due").value = "";
+    byId("editor-next-reminder").value = "";
+  });
+  byId("close-editor").addEventListener("click", () => { byId("post-it-editor").hidden = true; });
+  byId("apply-pending").addEventListener("click", applyPendingChanges);
+  byId("discard-pending").addEventListener("click", () => {
+    state.pending.clear();
+    updatePendingBar();
+    byId("post-it-editor").hidden = true;
+  });
+
+  root.querySelectorAll("[data-resize-column]").forEach((handle) => {
+    handle.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      const th = handle.closest("th");
+      const startX = event.clientX;
+      const startWidth = th.getBoundingClientRect().width;
+      handle.setPointerCapture(event.pointerId);
+      const move = (moveEvent) => {
+        const width = Math.max(72, startWidth + moveEvent.clientX - startX);
+        th.style.width = width + "px";
+        th.style.minWidth = width + "px";
+      };
+      const stop = () => {
+        handle.removeEventListener("pointermove", move);
+        handle.removeEventListener("pointerup", stop);
+        handle.removeEventListener("pointercancel", stop);
+      };
+      handle.addEventListener("pointermove", move);
+      handle.addEventListener("pointerup", stop);
+      handle.addEventListener("pointercancel", stop);
+    });
+  });
+
+  render();
+})();
+</script>
+
+<script id="codex-visualization-floating-ui-core" src="https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js"></script>
+<script id="codex-visualization-floating-ui-dom" src="https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js"></script>
+<script id="codex-visualization-lucide" async src="https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js"></script>
+<script id="codex-visualization-tooltip">/* oxlint-disable typescript/no-unsafe-argument, typescript/no-unsafe-call, typescript/no-unsafe-return */
+// Runs inside the visualization sandbox, not the host webview.
+(() => {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set(["top", "right", "bottom", "left"]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =>
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest("[data-tooltip]")
+      : null;
+  const containsTarget = (trigger, target) =>
+    target?.nodeType != null && trigger.contains(target);
+  const getContent = (trigger) =>
+    trigger.getAttribute("data-tooltip")?.trim() ?? "";
+  const getPlacement = (trigger) => {
+    const placement = trigger.getAttribute("data-tooltip-placement");
+    return tooltipPlacements.has(placement) ? placement : "top";
+  };
+  const getTooltip = () => {
+    if (tooltip == null) {
+      tooltip = document.createElement("div");
+      tooltip.id = tooltipId;
+      tooltip.className = "tooltip";
+      tooltip.setAttribute("role", "tooltip");
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) => {
+    const ids = new Set(
+      (trigger.getAttribute("aria-describedby") ?? "")
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute("aria-describedby");
+    } else {
+      trigger.setAttribute("aria-describedby", [...ids].join(" "));
+    }
+  };
+  const clearOpenTimeout = () => {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) => {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) => {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              "--tooltip-available-width",
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              "--tooltip-available-height",
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: "fixed",
+    })
+      .then(({ x, y }) => {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = "visible";
+      })
+      .catch(() => {
+        if (activeTrigger === trigger && request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) => {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = "hidden";
+    floating.style.transform = "translate(0, 0)";
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () => {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) => {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() < skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() => {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) => {
+    if (event.pointerType === "touch") {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) => {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(":focus-visible")) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) => {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () => {
+    closeTooltip(false);
+    document.removeEventListener("pointerover", handlePointerOpen);
+    document.removeEventListener("pointerout", handleLeave);
+    document.removeEventListener("focusin", handleFocusIn);
+    document.removeEventListener("focusout", handleLeave);
+    document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("contextmenu", handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener("pointerover", handlePointerOpen);
+  document.addEventListener("pointerout", handleLeave);
+  document.addEventListener("focusin", handleFocusIn);
+  document.addEventListener("focusout", handleLeave);
+  document.addEventListener("keydown", handleKeyDown);
+  document.addEventListener("contextmenu", handleContextMenu);
+  window.addEventListener("pagehide", destroy, { once: true });
+})();
+</script>
+<script id="codex-visualization-lucide-initialization">(() => {
+  const initialize = () => {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById("codex-visualization-lucide")
+    ?.addEventListener("load", initialize, { once: true });
+})();
+</script>
+</body>
+</html>
