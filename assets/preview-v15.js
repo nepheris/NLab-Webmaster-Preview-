@@ -1,0 +1,42 @@
+(()=>{
+'use strict';
+const VERSION='V1.5';
+const q=(s,r=document)=>r.querySelector(s);
+const icon=(d,cls='v15-icon')=>`<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+const I={gear:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0-5v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1',sun:'M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8',moon:'M20 15.5A8 8 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5z',grip:'M8 7h.01M12 7h.01M16 7h.01M8 12h.01M12 12h.01M16 12h.01M8 17h.01M12 17h.01M16 17h.01',lock:'M7 10V8a5 5 0 0 1 10 0v2M6 10h12v10H6z',unlock:'M8 10V8a4 4 0 0 1 7.5-2M6 10h12v10H6z',close:'M6 6l12 12M18 6L6 18'};
+
+function addStyles(){const s=document.createElement('style');s.textContent=`
+.v15-icon{width:1.05em;height:1.05em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.17em}
+#v14GithubCenter.active,#v15SettingsBtn.active{border-color:var(--accent)!important;background:var(--accent-soft)!important;color:var(--accent)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 14%,transparent)}
+#v14GithubCenter.active .v14-dot{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent)}
+.v15-settings-btn{display:inline-flex;align-items:center;gap:6px}
+.v15-settings{position:fixed;z-index:146;width:min(360px,calc(100vw - 20px));background:var(--surface);border:1px solid var(--line);border-radius:15px;box-shadow:0 22px 75px rgba(0,0,0,.42);color:var(--ink)}.v15-settings[hidden]{display:none}
+.v15-settings-head{display:flex;align-items:center;gap:7px;padding:9px;border-bottom:1px solid var(--line)}.v15-settings-head b{flex:1}.v15-settings-head button{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--muted);cursor:pointer}.v15-settings-head .v15-grip{cursor:grab}.v15-settings-head .v15-lock.active{color:var(--accent);border-color:var(--accent)}
+.v15-settings-body{padding:11px;display:grid;gap:10px}.v15-setting-card{border:1px solid var(--line);border-radius:11px;background:var(--surface2);padding:10px}.v15-setting-card small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:800;margin-bottom:7px}.v15-theme-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.v15-theme-choice{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:8px;background:var(--surface);color:var(--ink);font-weight:800;cursor:pointer}.v15-theme-choice.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.toolbar>.switch.v15-hidden-theme{display:none!important}
+@media(max-width:680px){.v15-settings{left:8px!important;right:8px!important;width:auto!important}}
+`;document.head.appendChild(s)}
+
+function updateVersion(){const badge=q('.v14-version');if(badge)badge.textContent=VERSION;const foot=q('.foot');if(foot)foot.innerHTML=`<span class="v14-foot-version">nLab Webmaster Preview · ${VERSION}</span> · Preview & review de projets.`}
+
+function setButtonActive(btn,on){if(!btn)return;btn.classList.toggle('active',!!on);btn.setAttribute('aria-pressed',on?'true':'false')}
+
+function installGithubToggle(){const btn=q('#v14GithubCenter'),panel=q('#v14GithubPanel');if(!btn||!panel||btn.dataset.v15Toggle)return;btn.dataset.v15Toggle='1';btn.setAttribute('aria-pressed','false');
+ const old=btn.onclick;btn.onclick=e=>{e.preventDefault();const opening=panel.hidden;if(opening){old?.call(btn,e);panel.hidden=false}else panel.hidden=true;setButtonActive(btn,!panel.hidden)};
+ const close=q('.v14-close',panel);if(close){const oldClose=close.onclick;close.onclick=e=>{oldClose?.call(close,e);panel.hidden=true;setButtonActive(btn,false)}}
+ const obs=new MutationObserver(()=>setButtonActive(btn,!panel.hidden));obs.observe(panel,{attributes:true,attributeFilter:['hidden']});setButtonActive(btn,!panel.hidden)}
+
+function makeDraggable(panel,grip,lock){const key='nlab-preview-settings-panel-v15';let locked=false;try{const st=JSON.parse(localStorage.getItem(key)||'{}');locked=!!st.locked;if(st.left!=null){panel.style.left=st.left+'px';panel.style.top=st.top+'px'}}catch{}const paint=()=>{lock.classList.toggle('active',locked);lock.innerHTML=icon(locked?I.lock:I.unlock);lock.title=locked?'Déverrouiller':'Verrouiller'};const save=()=>{const r=panel.getBoundingClientRect();localStorage.setItem(key,JSON.stringify({locked,left:r.left,top:r.top}))};lock.onclick=()=>{locked=!locked;paint();save()};paint();grip.addEventListener('pointerdown',e=>{if(locked)return;e.preventDefault();const r=panel.getBoundingClientRect(),dx=e.clientX-r.left,dy=e.clientY-r.top;const move=ev=>{panel.style.left=Math.max(4,Math.min(innerWidth-panel.offsetWidth-4,ev.clientX-dx))+'px';panel.style.top=Math.max(4,Math.min(innerHeight-48,ev.clientY-dy))+'px'};const up=()=>{removeEventListener('pointermove',move);save()};addEventListener('pointermove',move);addEventListener('pointerup',up,{once:true})})}
+
+function makeSettingsPanel(){let p=q('#v15SettingsPanel');if(p)return p;p=document.createElement('section');p.id='v15SettingsPanel';p.className='v15-settings';p.hidden=true;p.innerHTML=`<div class="v15-settings-head"><button class="v15-grip" title="Déplacer">${icon(I.grip)}</button><b>${icon(I.gear)} Paramètres</b><button class="v15-lock" title="Verrouiller">${icon(I.unlock)}</button><button class="v15-close" title="Fermer">${icon(I.close)}</button></div><div class="v15-settings-body"><div class="v15-setting-card"><small>Thème</small><div class="v15-theme-row"><button class="v15-theme-choice" data-theme-choice="light">${icon(I.sun)}Clair</button><button class="v15-theme-choice" data-theme-choice="dark">${icon(I.moon)}Sombre</button></div></div></div>`;document.body.appendChild(p);makeDraggable(p,q('.v15-grip',p),q('.v15-lock',p));return p}
+
+function paintTheme(){const cur=document.documentElement.dataset.theme||'dark';document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===cur))}
+function chooseTheme(theme){const current=document.documentElement.dataset.theme||'dark';if(current===theme){paintTheme();return}const original=q('#themeToggle');if(original)original.click();else document.documentElement.dataset.theme=theme;setTimeout(paintTheme,0)}
+
+function installSettingsCenter(){const bar=q('.toolbar');if(!bar||q('#v15SettingsBtn'))return;const oldSwitch=q('.switch',bar);if(oldSwitch)oldSwitch.classList.add('v15-hidden-theme');const btn=document.createElement('button');btn.id='v15SettingsBtn';btn.className='btn v15-settings-btn';btn.type='button';btn.setAttribute('aria-pressed','false');btn.innerHTML=`${icon(I.gear)}<span>Paramètres</span>`;bar.appendChild(btn);const panel=makeSettingsPanel();panel.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>chooseTheme(b.dataset.themeChoice));q('.v15-close',panel).onclick=()=>{panel.hidden=true;setButtonActive(btn,false)};btn.onclick=()=>{const opening=panel.hidden;if(opening){panel.hidden=false;const r=btn.getBoundingClientRect();requestAnimationFrame(()=>{const pr=panel.getBoundingClientRect();panel.style.left=Math.max(8,Math.min(innerWidth-pr.width-8,r.right-pr.width))+'px';panel.style.top=Math.max(8,Math.min(innerHeight-pr.height-8,r.bottom+7))+'px'})}else panel.hidden=true;setButtonActive(btn,!panel.hidden);paintTheme()};new MutationObserver(()=>setButtonActive(btn,!panel.hidden)).observe(panel,{attributes:true,attributeFilter:['hidden']});new MutationObserver(paintTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});paintTheme()}
+
+function installTrueRefresh(){const btn=q('#refreshBtn');if(!btn||btn.dataset.v15Reload)return;btn.dataset.v15Reload='1';btn.title='Actualiser la page (équivalent F5)';btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();location.reload()},true)}
+
+function init(){addStyles();updateVersion();installGithubToggle();installSettingsCenter();installTrueRefresh()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,0));else setTimeout(init,0);
+})();
