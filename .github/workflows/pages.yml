@@ -49,7 +49,11 @@ jobs:
           p=Path('_site/index.html')
           text=p.read_text(encoding='utf-8')
           needle='<script src="assets/preview-browser.js"></script>'
-          replacement='<script src="assets/preview-ui-fixes.js"></script>\n'+needle
+          replacement=(
+              '<script src="assets/preview-ui-fixes.js"></script>\n'
+              '<script src="assets/preview-resilience.js"></script>\n'
+              + needle
+          )
           if needle not in text:
               raise SystemExit('preview-browser script marker missing')
           p.write_text(text.replace(needle,replacement,1),encoding='utf-8')
@@ -57,7 +61,9 @@ jobs:
 
           node --check assets/preview-browser.js
           node --check assets/preview-ui-fixes.js
+          node --check assets/preview-resilience.js
           test -f Preview-Web-Sandbox/cockpit-nlab/20260813_010956_V4/index.html
+          test -f assets/nlab-wordmark.svg
 
           python3 - <<'PY'
           import json
@@ -152,6 +158,7 @@ jobs:
           test -f _site/VALIDATED_REVIEWS.json
           test -f _site/assets/preview-browser.js
           test -f _site/assets/preview-ui-fixes.js
+          test -f _site/assets/preview-resilience.js
           test -f _site/Preview-Web-Sandbox/README.md
 
       - name: Configure Pages
