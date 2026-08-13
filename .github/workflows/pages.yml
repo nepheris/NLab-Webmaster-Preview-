@@ -279,7 +279,8 @@ jobs:
                 && grep -q 'id="projectFilters"' .review-build/public-dom.html \
                 && grep -q 'v25-layout-controls' .review-build/public-dom.html \
                 && grep -q 'id="v14GithubCenter"' .review-build/public-dom.html \
-                && grep -q 'nLab Webmaster Review' .review-build/public-dom.html; then
+                && grep -q 'nLab Webmaster Review' .review-build/public-dom.html \
+                && ! grep -Eq 'Uncaught (TypeError|ReferenceError|SyntaxError)' .review-build/chrome.log; then
                 ok=1
                 break
               fi
