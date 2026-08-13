@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-08-13T03:19:08.642010Z",
+  "generated_at": "2026-08-13T03:19:34.402264Z",
   "root": "Preview-Web-Sandbox",
   "projects": [
     {
@@ -119,8 +119,8 @@
       },
       "visual": {
         "type": "image",
-        "url": "https://recettesducoeur.github.io/assets/images/logos/favicon.png",
-        "source": "production-favicon"
+        "url": "assets/runtime/images/recettes-du-coeur.png",
+        "source": "mirrored-production-favicon"
       },
       "previews": [],
       "root_files": [
@@ -303,8 +303,8 @@
         "repository": "recettesducoeur/recettesducoeur.github.io",
         "visual": {
           "type": "image",
-          "url": "https://recettesducoeur.github.io/assets/images/logos/favicon.png",
-          "source": "production-favicon"
+          "url": "assets/runtime/images/recettes-du-coeur.png",
+          "source": "mirrored-production-favicon"
         },
         "production": {
           "status": "production",
@@ -331,7 +331,7 @@
           "type": "blob",
           "mode": "100644",
           "sha": "6a7e939be5c53919165f909ef12a06767fcffd15",
-          "size": 495
+          "size": 482
         }
       ]
     }
