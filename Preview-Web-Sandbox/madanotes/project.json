@@ -1,0 +1,11 @@
+{
+  "project_id": "madanotes",
+  "display_name": "MadaNotes",
+  "description": "Projet MadaNotes / documentation web.",
+  "repository": "nepheris/MadaNotes",
+  "production": {
+    "status": "production",
+    "label": "Site public en production",
+    "url": "https://nepheris.github.io/MadaNotes/"
+  }
+}
