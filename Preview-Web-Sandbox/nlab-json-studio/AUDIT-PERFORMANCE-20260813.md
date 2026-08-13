@@ -1,4 +1,4 @@
-# Audit performance — nLab JSON Studio
+# Audit performance — nLab JSON Studio + Webmaster Preview
 
 Date: 2026-08-13
 Version auditée: v0.7-performance-audit
@@ -7,7 +7,7 @@ Version auditée: v0.7-performance-audit
 
 La performance et la stabilité du navigateur sont bloquantes pour la validation fonctionnelle. Elles deviennent un critère de qualité de premier rang, au même niveau que la correction fonctionnelle.
 
-## Causes identifiées
+## Causes identifiées dans JSON Studio
 
 1. Les vues générées restaient montées dans le DOM après navigation.
 2. RAW générait une surcouche de coloration complète et plusieurs gouttières de numéros, même pour les zones masquées.
@@ -18,7 +18,7 @@ La performance et la stabilité du navigateur sont bloquantes pour la validation
 7. Le Gantt recalculait plusieurs fois la même liste de tâches pendant un rendu.
 8. Il manquait des métriques runtime intégrées pour objectiver les régressions.
 
-## Corrections appliquées
+## Corrections appliquées dans JSON Studio
 
 - rendu de l'onglet actif uniquement;
 - rendu planifié par requestAnimationFrame et coalescé;
@@ -67,9 +67,31 @@ Temps de rendu observés sur le jeu de démo:
 
 Le mode « Tout déplier » de la hiérarchie reste volontairement coûteux: il peut monter à plusieurs milliers d'éléments DOM. Il doit rester une action explicite, jamais un état par défaut.
 
-## Réseau
+## Audit réseau du Webmaster Preview
 
-Le JSON Studio autonome ne contient aucun appel `fetch()` ni `XMLHttpRequest`. Ses charges principales sont CPU / DOM / mémoire. Les requêtes du viewer Webmaster Preview doivent être auditées séparément et ne doivent pas être confondues avec les charges internes du Studio.
+Le JSON Studio autonome ne contient aucun appel `fetch()` ni `XMLHttpRequest`: ses charges sont principalement CPU / DOM / mémoire.
+
+Le Webmaster Preview avait en revanche deux comportements coûteux:
+
+1. son helper GitHub utilisait `cache: 'no-store'`;
+2. `load()` rescannait systématiquement tout `Preview-Web-Sandbox` à chaque chargement, même lorsqu'un inventaire local était déjà disponible.
+
+Un scan complet effectue une lecture de la racine puis, pour chaque projet, une lecture récursive de l'arbre et une lecture de `project.json`. Le coût API augmente donc avec le nombre de projets.
+
+## Garde réseau appliqué au Webmaster Preview
+
+Le code historique du viewer est conservé dans `assets/preview-browser-core.js`. `assets/preview-browser.js` est maintenant un garde réseau placé devant ce core.
+
+Règles appliquées:
+
+- cache local des réponses GitHub REST pendant 5 minutes;
+- réponse locale immédiate pendant la durée du TTL;
+- après expiration: requêtes conditionnelles avec `If-None-Match` / ETag et `If-Modified-Since` lorsque disponibles;
+- maximum 2 requêtes GitHub simultanées;
+- suppression effective du `no-store` forcé par le core via le garde;
+- détection et journalisation des réponses 403/429 et des en-têtes de rate limit;
+- le bouton `Actualiser` force temporairement la revalidation réseau;
+- aucun appel GitHub API n'est nécessaire pour un simple changement de vue du viewer.
 
 ## Budgets proposés
 
@@ -83,6 +105,7 @@ Pour le POC et les prochaines previews:
 - listes/tableaux: plafonnement, pagination ou virtualisation dès que le nombre de lignes peut dépasser quelques centaines.
 - aucune requête réseau déclenchée par un simple changement d'onglet local.
 - pas de polling sans besoin explicite; préférer cache et invalidation.
+- API GitHub: TTL/cache + ETag pour les ressources relues, concurrence bornée, respect des rate limits.
 - mesure mémoire répétée après 20 changements de vues pour détecter les fuites.
 
 ## Validation requise avant promotion
@@ -96,4 +119,5 @@ Pour le POC et les prochaines previews:
 7. Test Hiérarchie: repliée puis tout déplier.
 8. Test gros tableau/dataset.
 9. Vérification absence de croissance mémoire monotone.
-10. Revue humaine dans Webmaster Preview.
+10. Contrôle du nombre de requêtes GitHub au premier chargement, au second chargement dans le TTL et après clic sur Actualiser.
+11. Revue humaine dans Webmaster Preview.
