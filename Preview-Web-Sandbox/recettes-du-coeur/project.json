@@ -1,0 +1,11 @@
+{
+  "project_id": "recettes-du-coeur",
+  "display_name": "Les Recettes du Cœur",
+  "description": "Site public Les Recettes du Cœur.",
+  "repository": "recettesducoeur/recettesducoeur.github.io",
+  "production": {
+    "status": "production",
+    "label": "Site public en production",
+    "url": "https://recettesducoeur.github.io/"
+  }
+}
