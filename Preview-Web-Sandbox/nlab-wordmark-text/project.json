@@ -1,0 +1,11 @@
+{
+  "project_id": "nlab-wordmark-text",
+  "display_name": "nLab — Mini-logo texte",
+  "description": "Validation comparative du wordmark nLab coloré et de son repli canonique sans couleur.",
+  "repository": "nepheris/nLab",
+  "visual": {
+    "type": "nlab",
+    "label": "nLab"
+  },
+  "production": null
+}
