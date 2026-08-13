@@ -10,8 +10,9 @@
   "production": null,
   "preview_status": {
     "state": "to_review",
-    "label": "Dashboard Post-it V0.5 à valider",
+    "label": "Dashboard Post-it V0.6 UX à valider",
     "candidate_maturity": "mvp",
-    "validation_effect": "Après validation HUMAN, le dashboard devient MVP et sa priorité peut être réduite au profit des projets à terminer."
+    "validation_effect": "Après validation HUMAN, le dashboard devient MVP et sa priorité peut être réduite au profit des projets à terminer.",
+    "design_system": "nlab-dashboard-system-v0.1"
   }
 }

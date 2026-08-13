@@ -1,0 +1,9 @@
+{
+  "project_id": "nlab-roadmap-dashboard",
+  "display_name": "Dashboard Roadmap nLab",
+  "description": "Vue visuelle de la feuille de route : phases, progression, gates HUMAN et prochaines actions.",
+  "repository": "nepheris/nLab",
+  "visual": {"type": "nlab", "label": "nLab"},
+  "production": null,
+  "preview_status": {"state": "to_review", "label": "Roadmap V0.1 design comparatif", "design_system": "nlab-dashboard-system-v0.1"}
+}

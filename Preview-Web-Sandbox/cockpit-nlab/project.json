@@ -1,11 +1,16 @@
 {
   "project_id": "cockpit-nlab",
   "display_name": "Cockpit nLab",
-  "description": "Cockpit de pilotage nLab / Control Plane.",
+  "description": "Cockpit de pilotage nLab / Control Plane. La V5 UX applique le socle visuel commun des dashboards nLab.",
   "repository": "nepheris/nLab",
   "visual": {
     "type": "nlab",
     "label": "nLab"
   },
-  "production": null
+  "production": null,
+  "preview_status": {
+    "state": "to_review",
+    "label": "Cockpit nLab V5 UX à comparer",
+    "design_system": "nlab-dashboard-system-v0.1"
+  }
 }

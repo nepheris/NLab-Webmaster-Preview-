@@ -1,0 +1,9 @@
+{
+  "project_id": "nlab-gantt-dashboard",
+  "display_name": "Dashboard Gantt nLab",
+  "description": "Vue chronologique des phases, tâches, jalons et dépendances du système nLab.",
+  "repository": "nepheris/nLab",
+  "visual": {"type": "nlab", "label": "nLab"},
+  "production": null,
+  "preview_status": {"state": "to_review", "label": "Gantt V0.1 design comparatif", "design_system": "nlab-dashboard-system-v0.1"}
+}
