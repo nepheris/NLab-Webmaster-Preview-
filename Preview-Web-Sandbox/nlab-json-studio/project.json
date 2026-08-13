@@ -1,7 +1,7 @@
 {
   "project_id": "nlab-json-studio",
   "display_name": "nLab JSON Studio",
-  "description": "Éditeur JSON multi-vues nLab — première preview debugged disponible pour test.",
+  "description": "Éditeur JSON multi-vues nLab — première preview debugged disponible et smoke-testée sous Chromium/CDP.",
   "repository": "nepheris/nLab-Web-Framework",
   "production": null,
   "visual": {
@@ -10,7 +10,7 @@
   },
   "preview_status": {
     "state": "testing",
-    "label": "Preview v0.5-debugged disponible — à examiner"
+    "label": "Preview v0.5-debugged — smoke tests automatisés OK, revue visuelle à poursuivre"
   },
   "source": {
     "issue": "https://github.com/nepheris/nLab-Web-Framework/issues/57",
