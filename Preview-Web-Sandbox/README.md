@@ -52,6 +52,13 @@ Une preview est un artefact temporaire de validation. Son état peut être : à 
 
 Les exports Review utilisent provisoirement la structure nLab `metadonnees / contenu / dictionnaire_donnees` afin de rester proches du futur Project Master / JSON Studio.
 
-## Modules réservés
+## Dashboards nLab comparatifs
 
-Les emplacements Cockpit, Roadmap, Gantt projet et Enregistrer sur GitHub sont visibles dans l'interface mais restent grisés et marqués `En développement` jusqu'à leur implémentation.
+Le laboratoire visuel regroupe désormais quatre surfaces de dashboard dans des projets de preview séparés :
+
+- `cockpit-nlab` : portefeuille, projets et agents ;
+- `post-it-dashboard` : Post-it, TODO et matrice d'Eisenhower ;
+- `nlab-roadmap-dashboard` : phases, gates et prochaines actions ;
+- `nlab-gantt-dashboard` : chronologie, jalons et dépendances.
+
+Le projet `dashboard-design-lab` sert de galerie comparative et de point de capitalisation. Les previews utilisent un snapshot local au chargement et le socle partagé `assets/dashboard-system.css` / `assets/dashboard-system.js`.
