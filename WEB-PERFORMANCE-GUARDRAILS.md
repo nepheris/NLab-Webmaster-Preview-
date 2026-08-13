@@ -33,9 +33,12 @@ Une fonctionnalité qui marche mais rend l'interface instable, bloque le navigat
 - Un changement d'onglet local ne doit produire aucune requête.
 - Cache des métadonnées et réponses stables.
 - Dédupliquer les requêtes concurrentes identiques.
-- Respecter les rate limits et les en-têtes de cache/ETag lorsque disponibles.
-- Pas de polling fréquent par défaut.
+- Pas de polling fréquent par défaut; préférer événements/webhooks lorsque l'architecture le permet.
+- Pour GitHub REST: privilégier les requêtes authentifiées et conditionnelles (`ETag` / `If-None-Match`, `Last-Modified` / `If-Modified-Since`).
+- Respecter `Retry-After`, `x-ratelimit-remaining` et `x-ratelimit-reset`; pas de retry agressif.
+- Éviter les rafales de requêtes concurrentes; sérialiser/mettre en file les appels lorsque nécessaire.
 - Regrouper les lectures de données quand une seule requête peut satisfaire plusieurs composants.
+- Demander uniquement les données nécessaires et conserver des réponses stables/cachables.
 - Instrumenter le nombre de requêtes lors des scénarios de navigation.
 
 ### 5. Mémoire
@@ -52,6 +55,7 @@ Une fonctionnalité qui marche mais rend l'interface instable, bloque le navigat
 - Changement d'onglet: pas de recalcul des autres vues.
 - Requêtes sur changement d'onglet: 0 sauf dépendance externe explicitement nécessaire.
 - Croissance mémoire après cycles de navigation: pas de tendance monotone inexpliquée.
+- API GitHub: aucune boucle de polling implicite; cache/ETag obligatoire lorsqu'une ressource est relue régulièrement.
 
 Ces budgets sont des garde-fous internes et doivent être adaptés pour les écrans volontairement complexes.
 
@@ -65,6 +69,7 @@ Avant de déclarer une preview « à valider »:
 - [ ] mesure CPU/rendu des interactions principales;
 - [ ] contrôle mémoire sur cycles répétés;
 - [ ] contrôle requêtes réseau;
+- [ ] contrôle cache/ETag/rate-limit pour les intégrations GitHub;
 - [ ] test gros dataset;
 - [ ] test navigation rapide;
 - [ ] test mobile ou viewport réduit;
