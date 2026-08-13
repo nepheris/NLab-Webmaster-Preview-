@@ -53,6 +53,9 @@ jobs:
           python3 -m json.tool _site/assets/runtime/public-inventory.json >/dev/null
           node scripts/smoke_test_public_runtime.mjs _site/assets/runtime/public-inventory.js
           node scripts/smoke_test_network_contract.mjs .
+          node scripts/smoke_test_gantt_hierarchy.mjs \
+            _site/Preview-Web-Sandbox/nlab-gantt-dashboard/20260813_160000_V0.2-hierarchical/index.html \
+            _site/Preview-Web-Sandbox/nlab-gantt-dashboard/20260813_160000_V0.2-hierarchical/project-hierarchy.json
 
           python3 - <<'PY'
           from pathlib import Path
@@ -296,6 +299,15 @@ jobs:
             grep -E 'statusText|project-card|lighthouse-version-link|V2\.5' .review-build/public-dom.html | head -40 || true
             exit 1
           fi
+          gantt_url="${PREVIEW_URL}Preview-Web-Sandbox/nlab-gantt-dashboard/20260813_160000_V0.2-hierarchical/?project=web-framework&ci=${GITHUB_SHA}"
+          timeout 25s google-chrome --headless=new --no-sandbox --disable-dev-shm-usage --virtual-time-budget=4000 --dump-dom "${gantt_url}" > .review-build/gantt-dom.html 2> .review-build/gantt-chrome.log
+          grep -q '<section id="detail">' .review-build/gantt-dom.html
+          grep -q 'Projet · nLab Web Framework' .review-build/gantt-dom.html
+          grep -q 'aria-level="4"' .review-build/gantt-dom.html
+          grep -q 'aria-label="Replier Dashboard System"' .review-build/gantt-dom.html
+          grep -q 'Master Preview' .review-build/gantt-dom.html
+          ! grep -Eq 'Uncaught (TypeError|ReferenceError|SyntaxError)' .review-build/gantt-chrome.log
+
           python3 - <<'PY'
           from pathlib import Path
           html=Path('.review-build/public-dom.html').read_text(encoding='utf-8')
