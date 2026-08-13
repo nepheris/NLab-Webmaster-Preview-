@@ -1,0 +1,11 @@
+{
+  "project_id": "lastwar",
+  "display_name": "LastWar / WAR",
+  "description": "Site communautaire LastWar2245.",
+  "repository": "lastwar2245/lastwar2245.github.io",
+  "production": {
+    "status": "production",
+    "label": "Site public en production",
+    "url": "https://lastwar2245.github.io/"
+  }
+}
