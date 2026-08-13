@@ -32,14 +32,20 @@ jobs:
           fetch-depth: 0
           path: framework-source
 
-      - name: Build and validate historical reviews
+      - name: Build site and validate historical reviews
         shell: bash
         run: |
           set -euo pipefail
           rm -rf _site .review-build
           mkdir -p _site/reviews .review-build
           cp index.html _site/index.html
+          cp legacy-web-framework.html _site/legacy-web-framework.html
+          cp -a assets _site/assets
+          cp -a Preview-Web-Sandbox _site/Preview-Web-Sandbox
           touch _site/.nojekyll
+
+          node --check assets/preview-browser.js
+          test -f Preview-Web-Sandbox/cockpit-nlab/20260813_010956_V4/index.html
 
           python3 - <<'PY'
           import json
@@ -122,16 +128,18 @@ jobs:
             fi
           done < .review-build/reviews.tsv
 
-          python3 build_preview.py .review-build/validated.tsv reviews.json _site/index.html _site/VALIDATED_REVIEWS.json
+          python3 build_preview.py .review-build/validated.tsv reviews.json _site/legacy-web-framework.html _site/VALIDATED_REVIEWS.json
 
-          echo '--- VALIDATED ---'
+          echo '--- VALIDATED LEGACY REVIEWS ---'
           cat .review-build/validated.tsv || true
-          echo '--- REJECTED ---'
+          echo '--- REJECTED LEGACY REVIEWS ---'
           cat .review-build/rejected.tsv || true
           test -s .review-build/validated.tsv
-          grep -q 'Ouvrir la review' _site/index.html
-          grep -q 'data-toggle-review' _site/index.html
+          grep -q 'Ouvrir la review' _site/legacy-web-framework.html
+          grep -q 'data-toggle-review' _site/legacy-web-framework.html
           test -f _site/VALIDATED_REVIEWS.json
+          test -f _site/assets/preview-browser.js
+          test -f _site/Preview-Web-Sandbox/README.md
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
