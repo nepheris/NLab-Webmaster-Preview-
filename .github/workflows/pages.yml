@@ -52,7 +52,8 @@ jobs:
           replacement=(
               '<script src="assets/preview-ui-fixes.js"></script>\n'
               '<script src="assets/preview-resilience.js"></script>\n'
-              + needle
+              + needle + '\n'
+              '<script src="assets/preview-v13.js"></script>'
           )
           if needle not in text:
               raise SystemExit('preview-browser script marker missing')
@@ -62,6 +63,9 @@ jobs:
           node --check assets/preview-browser.js
           node --check assets/preview-ui-fixes.js
           node --check assets/preview-resilience.js
+          node --check assets/preview-v13.js
+          python3 -m json.tool assets/config/priority-registry.json >/dev/null
+          python3 -m json.tool assets/config/private-data-auth.json >/dev/null
           test -f Preview-Web-Sandbox/cockpit-nlab/20260813_010956_V4/index.html
           test -f assets/nlab-wordmark.svg
 
@@ -159,6 +163,9 @@ jobs:
           test -f _site/assets/preview-browser.js
           test -f _site/assets/preview-ui-fixes.js
           test -f _site/assets/preview-resilience.js
+          test -f _site/assets/preview-v13.js
+          test -f _site/assets/config/priority-registry.json
+          test -f _site/assets/config/private-data-auth.json
           test -f _site/Preview-Web-Sandbox/README.md
 
       - name: Configure Pages
