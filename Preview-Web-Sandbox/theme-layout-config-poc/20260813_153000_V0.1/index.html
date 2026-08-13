@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>nLab · Configuration Lab</title>
+  <link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+  <style>
+    :root{--bg:#eef4fa;--surface:#fff;--surface-2:#f7fafd;--ink:#172033;--muted:#68758b;--line:#d7e2ed;--blue:#2f82ca;--blue-soft:#e4f1fc;--green:#25845a;--amber:#b47718;--red:#bb4949;--shadow:0 14px 38px rgba(29,49,75,.1);--radius:18px}
+    html[data-theme="dark"]{--bg:#0d141d;--surface:#151e29;--surface-2:#1a2633;--ink:#e9eff7;--muted:#9baabc;--line:#2c3a4a;--blue:#70baf4;--blue-soft:#193a57;--green:#61c08a;--amber:#e1b451;--red:#e47e7e;--shadow:0 18px 48px rgba(0,0,0,.3)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}.shell{width:min(95vw,1480px);margin:auto;padding:18px 0 70px}.top,.toolbar,.section,.floating{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}.top{display:flex;align-items:center;gap:14px;border-radius:22px;padding:15px 18px}.logo{width:48px;height:48px}.wordmark{font-size:24px;font-weight:900;letter-spacing:-1px}.wordmark .n{color:#3282ca}.wordmark .lab{color:#8793a2}.top h1{font-size:20px;margin:0}.top p{color:var(--muted);margin:2px 0 0}.tag{margin-left:auto;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--green);font-weight:800;font-size:11px}.toolbar{position:sticky;top:8px;z-index:30;display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:12px 0;border-radius:15px;padding:9px}.btn,.icon-btn,select,input{font:inherit}.btn,.icon-btn{border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:10px;cursor:pointer;font-weight:760}.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 10px}.btn:hover,.icon-btn:hover,.btn.active{border-color:var(--blue);background:var(--blue-soft);color:var(--blue)}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.danger{color:var(--red)}.icon-btn{display:grid;place-items:center;width:30px;height:30px;padding:0}.icon{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.sep{width:1px;height:28px;background:var(--line)}.scope{display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--surface-2)}.scope button{border:0;border-radius:7px;padding:5px 8px;background:transparent;color:var(--muted);cursor:pointer;font-weight:800;font-size:11px}.scope button.active{background:var(--blue);color:#fff}.push{margin-left:auto}.network{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px}.network i{width:8px;height:8px;border-radius:50%;background:var(--green)}.section{margin-top:12px;border-radius:var(--radius);overflow:hidden}.section>header,.subsection>header{display:flex;align-items:center;gap:9px}.section>header{padding:12px 14px;background:var(--surface)}.section-title{min-width:0}.section-title h2,.section-title h3{margin:0}.section-title h2{font-size:17px}.section-title h3{font-size:14px}.section-title p{margin:2px 0 0;color:var(--muted);font-size:11px}.controls{margin-left:auto;display:flex;align-items:center;gap:4px}.section.locked>header .move,.subsection.locked>header .move{display:none}.section.collapsed>.section-body,.subsection.collapsed>.sub-body{display:none}.section-body{padding:0 14px 14px}.subgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.subsection{border:1px solid var(--line);border-radius:14px;background:var(--surface-2);overflow:hidden}.subsection>header{padding:10px 11px}.sub-body{padding:0 11px 11px;color:var(--muted)}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}.card{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px}.card b{display:block;color:var(--ink);margin-bottom:4px}.card span{font-size:11px}.card .demo{height:58px;border-radius:9px;margin-bottom:9px;background:linear-gradient(135deg,var(--blue-soft),transparent);border:1px solid var(--line)}.hint{border-left:3px solid var(--blue);background:var(--blue-soft);border-radius:9px;padding:9px 10px;color:var(--muted);font-size:11px}.settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.field{display:grid;gap:5px}.field label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:850}.field input,.field select{border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);padding:8px}.theme-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.theme-chip{border:1px solid var(--line);border-radius:999px;padding:5px 8px;background:var(--surface);color:var(--muted);font-size:11px}.theme-chip.active{border-color:var(--blue);color:var(--blue)}.phase{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.phase div{border:1px solid var(--line);border-radius:12px;padding:10px}.phase b{display:block}.phase small{color:var(--muted)}.phase .ok{border-color:color-mix(in srgb,var(--green) 50%,var(--line))}.phase .now{border-color:color-mix(in srgb,var(--amber) 55%,var(--line))}.floating{position:fixed;right:20px;bottom:18px;width:380px;min-width:260px;min-height:54px;max-width:calc(100vw - 24px);max-height:80vh;resize:both;overflow:auto;border-radius:16px;z-index:70}.floating:not(.anchored){position:absolute}.floating.collapsed{height:54px!important;min-height:54px;resize:none;overflow:hidden}.float-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:10px 11px;background:var(--surface);border-bottom:1px solid var(--line);cursor:move}.float-head b{flex:1}.float-body{padding:11px}.floating.collapsed .float-body{display:none}.receipt{display:grid;gap:7px;border:1px solid var(--line);border-radius:11px;padding:10px;background:var(--surface-2);font-size:11px}.receipt code{word-break:break-all}.status{color:var(--green);font-weight:800}.disabled{opacity:.55;cursor:not-allowed}.toast{position:fixed;left:50%;bottom:16px;transform:translate(-50%,8px);background:#111827;color:#fff;padding:9px 12px;border-radius:10px;opacity:0;pointer-events:none;transition:.15s;z-index:100}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:800px){.shell{width:97vw;padding-top:8px}.top{align-items:flex-start}.tag{display:none}.toolbar{position:static}.push{margin-left:0}.subgrid,.settings,.phase{grid-template-columns:1fr}.floating{right:6px;bottom:6px;width:min(94vw,380px)}}
+  </style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol><symbol id="down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol><symbol id="fold" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4"/></symbol><symbol id="save" viewBox="0 0 24 24"><path d="M5 3h12l2 2v16H5zM8 3v6h8V3M8 16h8"/></symbol><symbol id="download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></symbol><symbol id="upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></symbol><symbol id="pin" viewBox="0 0 24 24"><path d="M9 3h6l-1 6 3 3v2H7v-2l3-3zM12 14v7"/></symbol>
+</defs></svg>
+<main class="shell">
+  <header class="top">
+    <img class="logo" src="../../../assets/favicon.svg" alt="">
+    <div><div class="wordmark"><span class="n">n</span><span class="lab">Lab</span></div><p>Webmaster Preview</p></div>
+    <div><h1>Configuration Lab</h1><p>Thèmes, disposition, portée des commandes et persistance — POC isolé.</p></div>
+    <span class="tag">V0.1 · sandbox</span>
+  </header>
+
+  <nav class="toolbar" aria-label="Commandes globales">
+    <button class="btn" id="configMode">⚙ Configuration active</button>
+    <div class="scope" aria-label="Portée des commandes"><button class="active" data-scope="local">Élément</button><button data-scope="all">Tous identiques</button></div>
+    <span class="sep"></span>
+    <button class="btn" id="lockAll"><svg class="icon"><use href="#lock"/></svg>Verrouiller tout</button>
+    <button class="btn" id="openAll">Tout déplier</button>
+    <button class="btn" id="closeAll">Tout replier</button>
+    <span class="sep"></span>
+    <button class="btn primary" id="saveTheme"><svg class="icon"><use href="#save"/></svg>Enregistrer le thème</button>
+    <button class="btn" id="exportConfig"><svg class="icon"><use href="#download"/></svg>Exporter JSON</button>
+    <button class="btn" id="importConfig"><svg class="icon"><use href="#upload"/></svg>Importer</button><input id="importFile" type="file" accept="application/json" hidden>
+    <span class="network push"><i></i>0 requête réseau automatique</span>
+  </nav>
+
+  <div id="sections">
+    <section class="section" data-id="global-settings" data-kind="section">
+      <header><div class="section-title"><h2>Commandes globales et thèmes</h2><p>Configuration enregistrée localement, sans rafraîchissement réseau.</p></div><div class="controls"></div></header>
+      <div class="section-body"><div class="subgrid" data-container="subsection">
+        <article class="subsection" data-id="theme-settings" data-kind="subsection"><header><div class="section-title"><h3>Configuration du thème</h3><p>Nom, couleurs et modèle actif</p></div><div class="controls"></div></header><div class="sub-body"><div class="settings"><div class="field"><label>Nom du thème</label><input id="themeName" value="Review compacte"></div><div class="field"><label>Mode</label><select id="themeMode"><option value="dark">Sombre</option><option value="light">Clair</option></select></div></div><div class="theme-list" id="themeList"><span class="theme-chip active">Review compacte</span></div></div></article>
+        <article class="subsection" data-id="storage-settings" data-kind="subsection"><header><div class="section-title"><h3>Persistance</h3><p>Local → dépôt public hors galerie → dépôt privé</p></div><div class="controls"></div></header><div class="sub-body"><div class="phase"><div class="ok"><b>1 · Local</b><small>Actif : localStorage + JSON</small></div><div class="now"><b>2 · Repo public</b><small>Cible initialisée, écriture via agent</small></div><div><b>3 · Repo privé</b><small>GitHub App/OAuth requis</small></div></div></div></article>
+      </div></div>
+    </section>
+
+    <section class="section" data-id="project-gallery" data-kind="section">
+      <header><div class="section-title"><h2>Galerie des projets</h2><p>Une grande section réunissant commandes et visualisation.</p></div><div class="controls"></div></header>
+      <div class="section-body"><div class="subgrid" data-container="subsection">
+        <article class="subsection" data-id="gallery-commands" data-kind="subsection"><header><div class="section-title"><h3>Commandes de la galerie</h3><p>Recherche, tri, taille et filtres</p></div><div class="controls"></div></header><div class="sub-body"><div class="settings"><div class="field"><label>Recherche</label><input placeholder="Rechercher un projet…"></div><div class="field"><label>Vue</label><select><option>Cartes</option><option>Tableau</option></select></div></div></div></article>
+        <article class="subsection" data-id="gallery-visual" data-kind="subsection"><header><div class="section-title"><h3>Visualisation</h3><p>Cartes comparables du système nLab</p></div><div class="controls"></div></header><div class="sub-body"><div class="cards"><div class="card"><div class="demo"></div><b>Copilote</b><span>Dashboard opérationnel</span></div><div class="card"><div class="demo"></div><b>Post-it</b><span>Pilotage et Eisenhower</span></div><div class="card"><div class="demo"></div><b>Roadmap / Gantt</b><span>Planning et jalons</span></div></div></div></article>
+      </div></div>
+    </section>
+
+    <section class="section" data-id="evaluation" data-kind="section">
+      <header><div class="section-title"><h2>Évaluation et capitalisation</h2><p>Comparer les configurations sans modifier le site principal.</p></div><div class="controls"></div></header>
+      <div class="section-body"><div class="hint">Les déplacements ne s’effectuent qu’entre éléments de même niveau. Le verrouillage masque les commandes de déplacement. La portée « Tous identiques » applique une action à toutes les sections ou à toutes les sous-sections correspondantes.</div></div>
+    </section>
+  </div>
+</main>
+
+<aside class="floating anchored" id="githubCenter">
+  <div class="float-head" id="floatHandle"><b>Centre GitHub · configuration</b><button class="icon-btn" id="anchorFloat" title="Ancrer la fenêtre"><svg class="icon"><use href="#pin"/></svg></button><button class="icon-btn" id="collapseFloat" title="Replier"><svg class="icon"><use href="#fold"/></svg></button></div>
+  <div class="float-body"><div class="receipt"><b>Test de stockage public hors Preview</b><span class="status">Cible initialisée</span><code>User-Config-Sandbox/theme-layout-config-poc/</code><span>L’écriture directe depuis cette page est volontairement désactivée : aucun jeton ne doit être exposé dans le HTML ou localStorage.</span><button class="btn" id="prepareSync">Préparer le lot GitHub</button><button class="btn disabled" disabled>Synchroniser directement · authentification requise</button></div></div>
+</aside>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(()=>{
+  'use strict';
+  const KEY='nlab-theme-layout-poc-v1', $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  let scope='local',configMode=true;
+  const toast=message=>{const t=$('#toast');t.textContent=message;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1700)};
+  const icon=id=>`<svg class="icon"><use href="#${id}"/></svg>`;
+  const siblings=el=>$$(`:scope > [data-kind="${el.dataset.kind}"]`,el.parentElement);
+  const targets=el=>scope==='local'?[el]:$$(`[data-kind="${el.dataset.kind}"]`);
+  function move(el,dir){if(el.classList.contains('locked'))return;const list=siblings(el),i=list.indexOf(el),other=list[i+dir];if(!other)return;other.insertAdjacentElement(dir<0?'beforebegin':'afterend',el);persistDraft()}
+  function paintControls(){
+    $$('[data-kind]').forEach(el=>{const host=$(':scope > header > .controls',el);if(!host||host.dataset.ready)return;host.dataset.ready='1';host.innerHTML=`<button class="icon-btn move up" title="Monter">${icon('up')}</button><button class="icon-btn move down" title="Descendre">${icon('down')}</button><button class="icon-btn lock" title="Verrouiller">${icon('lock')}</button><button class="icon-btn fold" title="Replier">${icon('fold')}</button>`;
+      host.onclick=e=>{e.preventDefault();e.stopPropagation();const b=e.target.closest('button');if(!b)return;if(b.classList.contains('up'))move(el,-1);if(b.classList.contains('down'))move(el,1);if(b.classList.contains('lock'))targets(el).forEach(x=>x.classList.toggle('locked'));if(b.classList.contains('fold'))targets(el).forEach(x=>x.classList.toggle('collapsed'));persistDraft()};
+    });
+    document.body.classList.toggle('config-off',!configMode);$$('.controls').forEach(c=>c.hidden=!configMode);
+  }
+  function sectionState(el){return{id:el.dataset.id,kind:el.dataset.kind,collapsed:el.classList.contains('collapsed'),locked:el.classList.contains('locked'),children:$$(':scope > .section-body > [data-container] > [data-kind],:scope > .sub-body > [data-container] > [data-kind]',el).map(sectionState)}}
+  function capture(name=$('#themeName').value.trim()||'Sans nom'){const f=$('#githubCenter'),r=f.getBoundingClientRect(),anchored=f.classList.contains('anchored');return{schema_version:'nlab.webmaster-layout-config/0.1',config_id:`CFG-${Date.now()}`,name,updated_at:new Date().toISOString(),theme:document.documentElement.dataset.theme,scope,sections:$$('#sections > .section').map(sectionState),floating_windows:[{id:'github-center',left:r.left+(anchored?0:scrollX),top:r.top+(anchored?0:scrollY),width:r.width,height:r.height,collapsed:f.classList.contains('collapsed'),anchored}],storage:{local:true,repository:'nepheris/nLab-Webmaster-Preview',path:'User-Config-Sandbox/theme-layout-config-poc/'}}}
+  function reorder(container,states){(states||[]).forEach(s=>{const el=$(`[data-id="${CSS.escape(s.id)}"]`,container);if(el)container.appendChild(el)})}
+  function applyStates(states){(states||[]).forEach(s=>{const el=$(`[data-id="${CSS.escape(s.id)}"]`);if(!el)return;el.classList.toggle('collapsed',!!s.collapsed);el.classList.toggle('locked',!!s.locked);const childContainer=$(':scope > .section-body > [data-container],:scope > .sub-body > [data-container]',el);if(childContainer){reorder(childContainer,s.children);applyStates(s.children)}})}
+  function apply(cfg){if(!cfg)return;document.documentElement.dataset.theme=cfg.theme||'dark';$('#themeMode').value=document.documentElement.dataset.theme;scope=cfg.scope||'local';$$('[data-scope]').forEach(b=>b.classList.toggle('active',b.dataset.scope===scope));reorder($('#sections'),cfg.sections);applyStates(cfg.sections);const w=cfg.floating_windows?.[0],f=$('#githubCenter');if(w){f.style.left=`${Math.max(6,w.left)}px`;f.style.top=`${Math.max(6,w.top)}px`;f.style.right='auto';f.style.bottom='auto';f.style.width=`${w.width}px`;f.style.height=`${w.height}px`;f.classList.toggle('collapsed',!!w.collapsed);f.classList.toggle('anchored',w.anchored!==false)}paintControls()}
+  function store(){try{return JSON.parse(localStorage.getItem(KEY)||'{"active":null,"themes":{},"draft":null}')}catch{return{active:null,themes:{},draft:null}}}
+  function write(v){localStorage.setItem(KEY,JSON.stringify(v))}
+  function persistDraft(){const s=store();s.draft=capture();write(s)}
+  function renderThemes(){const s=store(),host=$('#themeList');host.innerHTML=Object.keys(s.themes).map(n=>`<button class="theme-chip ${n===s.active?'active':''}" data-theme-name="${n.replaceAll('"','&quot;')}">${n}</button>`).join('')||'<span class="theme-chip active">Aucun modèle nommé</span>';$$('[data-theme-name]',host).forEach(b=>b.onclick=()=>{const q=store();q.active=b.dataset.themeName;write(q);$('#themeName').value=q.active;apply(q.themes[q.active]);renderThemes();toast(`Thème « ${q.active} » chargé`)})}
+  function saveTheme(){const name=$('#themeName').value.trim();if(!name)return toast('Donnez un nom au thème');const s=store();s.active=name;s.themes[name]=capture(name);s.draft=s.themes[name];write(s);renderThemes();toast(`Thème « ${name} » enregistré localement`)}
+  function download(data,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+  $('#configMode').onclick=()=>{configMode=!configMode;$('#configMode').classList.toggle('active',configMode);$('#configMode').textContent=configMode?'⚙ Configuration active':'⚙ Configuration masquée';paintControls()};
+  $$('[data-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.scope;$$('[data-scope]').forEach(x=>x.classList.toggle('active',x===b));persistDraft();toast(scope==='local'?'Portée : élément courant':'Portée : tous les éléments identiques')});
+  $('#lockAll').onclick=()=>{const lock=$$('[data-kind]').some(x=>!x.classList.contains('locked'));$$('[data-kind]').forEach(x=>x.classList.toggle('locked',lock));$('#lockAll').innerHTML=`${icon('lock')}${lock?'Déverrouiller tout':'Verrouiller tout'}`;persistDraft()};
+  $('#openAll').onclick=()=>{$$('[data-kind]').forEach(x=>x.classList.remove('collapsed'));persistDraft()};$('#closeAll').onclick=()=>{$$('[data-kind]').forEach(x=>x.classList.add('collapsed'));persistDraft()};
+  $('#themeMode').onchange=e=>{document.documentElement.dataset.theme=e.target.value;persistDraft()};$('#saveTheme').onclick=saveTheme;
+  $('#exportConfig').onclick=()=>download(capture(),`nlab-layout-${new Date().toISOString().slice(0,10)}.json`);$('#importConfig').onclick=()=>$('#importFile').click();$('#importFile').onchange=async e=>{try{const cfg=JSON.parse(await e.target.files[0].text());if(!String(cfg.schema_version||'').startsWith('nlab.webmaster-layout-config/'))throw Error();apply(cfg);$('#themeName').value=cfg.name||'Import';persistDraft();toast('Configuration JSON importée')}catch{toast('Fichier de configuration invalide')}};
+  $('#prepareSync').onclick=()=>{const cfg=capture();cfg.storage.mode='prepared_for_authenticated_agent';download(cfg,`${cfg.config_id}.json`);toast('Lot GitHub préparé — aucune requête envoyée')};
+  const f=$('#githubCenter'),handle=$('#floatHandle');let drag=null,resizeTimer=null;handle.onpointerdown=e=>{if(e.target.closest('button'))return;const r=f.getBoundingClientRect();drag={x:e.clientX-r.left,y:e.clientY-r.top};handle.setPointerCapture(e.pointerId)};handle.onpointermove=e=>{if(!drag)return;const anchored=f.classList.contains('anchored'),ox=anchored?0:scrollX,oy=anchored?0:scrollY,maxX=(anchored?innerWidth:document.documentElement.scrollWidth)-f.offsetWidth-6;f.style.left=`${Math.max(6,Math.min(maxX,e.clientX+ox-drag.x))}px`;f.style.top=`${Math.max(6,e.clientY+oy-drag.y)}px`;f.style.right='auto';f.style.bottom='auto'};handle.onpointerup=e=>{drag=null;handle.releasePointerCapture(e.pointerId);persistDraft()};
+  $('#collapseFloat').onclick=()=>{f.classList.toggle('collapsed');persistDraft()};$('#anchorFloat').onclick=()=>{const r=f.getBoundingClientRect(),willAnchor=!f.classList.contains('anchored');f.classList.toggle('anchored',willAnchor);f.style.left=`${r.left+(willAnchor?0:scrollX)}px`;f.style.top=`${r.top+(willAnchor?0:scrollY)}px`;f.style.right='auto';f.style.bottom='auto';$('#anchorFloat').classList.toggle('active',willAnchor);persistDraft();toast(willAnchor?'Fenêtre ancrée au viewport':'Fenêtre attachée au document')};
+  new ResizeObserver(()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(persistDraft,280)}).observe(f);
+  paintControls();renderThemes();const s=store();if(s.draft)apply(s.draft);else persistDraft();
+})();
+</script>
+</body>
+</html>

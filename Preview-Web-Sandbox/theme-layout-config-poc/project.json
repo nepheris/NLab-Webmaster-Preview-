@@ -1,0 +1,15 @@
+{
+  "project_id": "theme-layout-config-poc",
+  "display_name": "nLab Configuration Lab",
+  "description": "POC isolé pour thèmes de disposition, portée locale/globale, persistance JSON et fenêtres flottantes.",
+  "repository": "nepheris/nLab-Webmaster-Preview",
+  "visual": {
+    "type": "nlab",
+    "label": "nLab"
+  },
+  "preview_status": {
+    "state": "to_review",
+    "label": "V0.1 · configuration et persistance locale",
+    "candidate": "V0.1"
+  }
+}
