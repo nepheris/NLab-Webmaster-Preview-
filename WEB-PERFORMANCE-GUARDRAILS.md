@@ -31,6 +31,8 @@ Une fonctionnalité qui marche mais rend l'interface instable, bloque le navigat
 ### 4. Réseau et APIs
 
 - Un changement d'onglet local ne doit produire aucune requête.
+- L'arbre de navigation public doit être construit une fois au déploiement, chargé depuis un snapshot statique au démarrage, puis rester local pendant toute la session.
+- Aucun rescan GitHub automatique après le chargement initial ; seule une action humaine explicite « Actualiser » peut reconstruire l'inventaire distant.
 - Cache des métadonnées et réponses stables.
 - Dédupliquer les requêtes concurrentes identiques.
 - Pas de polling fréquent par défaut; préférer événements/webhooks lorsque l'architecture le permet.

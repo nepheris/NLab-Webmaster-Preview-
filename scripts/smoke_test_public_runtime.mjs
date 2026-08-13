@@ -10,6 +10,7 @@ const context={
   console,
   URL,
   Response,
+  Headers,
   TextEncoder,
   TextDecoder,
   btoa:s=>Buffer.from(s,'binary').toString('base64'),
@@ -49,6 +50,14 @@ const cached=JSON.parse(store.get('nlab-preview-inventory-v3')||'null');
 if(!cached||cached.projects.length!==roots.length) throw new Error('Runtime did not seed the public inventory cache');
 if(network.some(x=>x.includes('/nLab-Webmaster-Preview/'))) throw new Error(`Public runtime unexpectedly called network: ${network.join(', ')}`);
 
+let forcedRefreshDelegated=false;
+try{
+  await context.fetch(rootUrl,{headers:{'X-nLab-Force-Refresh':'1'}});
+}catch(e){
+  forcedRefreshDelegated=e.message==='NETWORK_BLOCKED';
+}
+if(!forcedRefreshDelegated) throw new Error('Explicit refresh must bypass the static snapshot and reach GitHub');
+
 let privateDelegated=false;
 try{
   await context.fetch('https://api.github.com/repos/nepheris/nLab-Webmaster/contents/Data/poc/private-access-test.json');
@@ -61,7 +70,8 @@ if(context.document.documentElement.dataset.publicInventory!=='pages-runtime') t
 console.log(JSON.stringify({
   status:'PASS',
   publicProjects:roots.length,
-  publicNetworkCalls:network.filter(x=>x.includes('/nLab-Webmaster-Preview/')).length,
+  publicNetworkCallsBeforeRefresh:0,
+  forcedRefreshDelegated,
   privateDelegated,
   runtimeSource:context.document.documentElement.dataset.publicInventory
 }));
