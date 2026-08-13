@@ -1,0 +1,45 @@
+{
+  "metadonnees": {
+    "schema_version": "1.0.0-candidate",
+    "identification": {
+      "family": "PREVIEW_REVIEW_SYNC_POC",
+      "id": "PREVIEW-REVIEW-SYNC-POC-001",
+      "slug": "github-write-test",
+      "label_name": "Webmaster Preview — test écriture GitHub",
+      "description": "POC technique de persistance GitHub des données Review. Ne contient aucune décision HUMAN métier."
+    },
+    "lifecycle": {
+      "status": "POC",
+      "created_at": "2026-08-13T02:30:00+02:00",
+      "updated_at": "2026-08-13T02:30:00+02:00"
+    },
+    "location": {
+      "canonical": {
+        "type": "git",
+        "repo": "nepheris/nLab-Webmaster-Preview",
+        "path": "Preview-Web-Sandbox/.reviews/_poc/github-write-test.json"
+      }
+    },
+    "publication": {
+      "status": "preview-public-repository"
+    },
+    "version": {
+      "active": "1"
+    }
+  },
+  "contenu": {
+    "test": {
+      "operation": "WRITE_REVIEW_JSON",
+      "result": "PASS",
+      "writer": "ChatGPT GitHub connector",
+      "browser_authentication": "NOT_TESTED",
+      "note": "Le chemin de persistance et la structure JSON sont validés. L'authentification du navigateur reste un chantier distinct."
+    },
+    "relations": []
+  },
+  "dictionnaire_donnees": {
+    "mode": "CANDIDATE",
+    "schema_ref": "Project Master / JSON Studio — en cours de validation",
+    "comment": "POC provisoire aligné sur metadonnees / contenu / dictionnaire_donnees."
+  }
+}
