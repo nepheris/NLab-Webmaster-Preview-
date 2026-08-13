@@ -34,16 +34,14 @@ jobs:
           python3 -m json.tool assets/runtime/public-inventory.json >/dev/null
 
       - name: Mirror public project assets
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p assets/runtime/images
-          gh api \
-            -H 'Accept: application/vnd.github.raw+json' \
-            /repos/recettesducoeur/recettesducoeur.github.io/contents/assets/images/logos/favicon.png \
-            > assets/runtime/images/recettes-du-coeur.png
+          curl -fsSL \
+            https://raw.githubusercontent.com/recettesducoeur/recettesducoeur.github.io/main/assets/images/logos/favicon.png \
+            -o assets/runtime/images/recettes-du-coeur.png
           test -s assets/runtime/images/recettes-du-coeur.png
+          file assets/runtime/images/recettes-du-coeur.png | grep -qi 'PNG image data'
 
       - name: Commit runtime snapshot if changed
         shell: bash
