@@ -55,7 +55,8 @@ jobs:
               + needle + '\n'
               '<script src="assets/preview-v13.js"></script>\n'
               '<script src="assets/preview-v14.js"></script>\n'
-              '<script src="assets/preview-v15.js"></script>'
+              '<script src="assets/preview-v15.js"></script>\n'
+              '<script src="assets/preview-v16.js"></script>'
           )
           if needle not in text:
               raise SystemExit('preview-browser script marker missing')
@@ -68,6 +69,7 @@ jobs:
           node --check assets/preview-v13.js
           node --check assets/preview-v14.js
           node --check assets/preview-v15.js
+          node --check assets/preview-v16.js
           python3 -m json.tool assets/config/priority-registry.json >/dev/null
           python3 -m json.tool assets/config/private-data-auth.json >/dev/null
           test -f Preview-Web-Sandbox/cockpit-nlab/20260813_010956_V4/index.html
@@ -170,6 +172,7 @@ jobs:
           test -f _site/assets/preview-v13.js
           test -f _site/assets/preview-v14.js
           test -f _site/assets/preview-v15.js
+          test -f _site/assets/preview-v16.js
           test -f _site/assets/config/priority-registry.json
           test -f _site/assets/config/private-data-auth.json
           test -f _site/Preview-Web-Sandbox/README.md
