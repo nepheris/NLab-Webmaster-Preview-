@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-08-13T03:15:22.906993Z",
+  "generated_at": "2026-08-13T03:18:02.694351Z",
   "root": "Preview-Web-Sandbox",
   "projects": [
     {
@@ -86,7 +86,22 @@
         "type": "nlab",
         "label": "nLab"
       },
-      "previews": [],
+      "previews": [
+        {
+          "project": "nlab-json-studio",
+          "project_name": "nLab JSON Studio",
+          "iteration": "20260813_050900_v0.5-debugged",
+          "label": "v0.5-debugged",
+          "stamp": "20260813050900",
+          "date": "2026-08-13T03:09:00Z",
+          "files": [
+            "index.html"
+          ],
+          "files_count": 1,
+          "entry": "index.html",
+          "key": "nlab-json-studio/20260813_050900_v0.5-debugged"
+        }
+      ],
       "root_files": [
         "project.json"
       ],
@@ -256,6 +271,19 @@
         }
       },
       "tree": [
+        {
+          "path": "20260813_050900_v0.5-debugged",
+          "type": "tree",
+          "mode": "040000",
+          "sha": "ca6774904d60329fac64b58bd3240853e8a192dd"
+        },
+        {
+          "path": "20260813_050900_v0.5-debugged/index.html",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "44628440e63094a64f70ebb9122d7311f479de1d",
+          "size": 95960
+        },
         {
           "path": "project.json",
           "type": "blob",
