@@ -3,5 +3,9 @@
   "display_name": "Cockpit nLab",
   "description": "Cockpit de pilotage nLab / Control Plane.",
   "repository": "nepheris/nLab",
+  "visual": {
+    "type": "nlab",
+    "label": "nLab"
+  },
   "production": null
 }
