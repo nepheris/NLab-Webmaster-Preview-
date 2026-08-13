@@ -63,6 +63,7 @@ Une fonctionnalité qui marche mais rend l'interface instable, bloque le navigat
 - Analyser les métriques et diagnostics, pas seulement le score global : LCP, CLS, TBT, FCP, Speed Index, poids transféré, nombre de requêtes, JavaScript inutilisé et ressources bloquant le rendu.
 - Distinguer données de laboratoire Lighthouse et données terrain Core Web Vitals/CrUX.
 - Une régression significative doit créer une action traçable avant promotion ; les seuils deviennent bloquants seulement après établissement d'une baseline fiable.
+- La catégorie Navigation agentique reste expérimentale : suivre ses contrôles déterministes sans la traiter comme un score classique ni comme un gate bloquant.
 - L'automatisation Lighthouse CI appartient au pipeline de benchmark/CI, jamais au runtime de la page.
 
 ## Budgets de validation par défaut

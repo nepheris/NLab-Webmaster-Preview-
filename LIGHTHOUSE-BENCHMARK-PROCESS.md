@@ -26,6 +26,7 @@ L'URL auditée doit être l'URL publique de la preview. Une URL `github.com/<own
 - profil Mobile ou Bureau ;
 - nombre d'exécutions et méthode d'agrégation ;
 - scores Performance, Accessibilité, Bonnes pratiques et SEO ;
+- résultat Navigation agentique, traité comme signal expérimental sans score classique ;
 - FCP, LCP, Speed Index, TBT et CLS ;
 - nombre de requêtes et poids transféré ;
 - ressources bloquant le rendu, JavaScript/CSS inutilisé et tâches longues ;
@@ -40,6 +41,8 @@ Pendant la phase POC, les seuils sont des alertes et non des gates automatiques 
 - CLS supérieur à 0,1 : revue demandée ;
 - nouvelle ressource bloquant le rendu, nouvelle requête API automatique ou hausse inexpliquée du poids : revue demandée ;
 - échec Accessibilité, Bonnes pratiques ou SEO nouvellement introduit : correction ou justification traçable.
+
+La catégorie Navigation agentique est expérimentale. Ses résultats servent à examiner l'arbre d'accessibilité, la stabilité, la découvrabilité et WebMCP, mais ne sont pas bloquants pendant le POC.
 
 INP est une métrique terrain. Pour les audits de laboratoire, TBT est suivi comme signal de blocage du thread principal sans être présenté comme un remplacement exact d'INP.
 
