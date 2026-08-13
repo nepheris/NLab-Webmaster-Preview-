@@ -1,0 +1,311 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-13T03:14:33.469328Z",
+  "root": "Preview-Web-Sandbox",
+  "projects": [
+    {
+      "id": "cockpit-nlab",
+      "name": "Cockpit nLab",
+      "description": "Cockpit de pilotage nLab / Control Plane.",
+      "repository": "nepheris/nLab",
+      "production": null,
+      "visual": {
+        "type": "nlab",
+        "label": "nLab"
+      },
+      "previews": [
+        {
+          "project": "cockpit-nlab",
+          "project_name": "Cockpit nLab",
+          "iteration": "20260813_010956_V4",
+          "label": "V4",
+          "stamp": "20260813010956",
+          "date": "2026-08-12T23:09:56Z",
+          "files": [
+            "index.html"
+          ],
+          "files_count": 1,
+          "entry": "index.html",
+          "key": "cockpit-nlab/20260813_010956_V4"
+        }
+      ],
+      "root_files": [
+        "project.json"
+      ],
+      "production_files": []
+    },
+    {
+      "id": "lastwar",
+      "name": "LastWar / WAR",
+      "description": "Site communautaire LastWar2245.",
+      "repository": "lastwar2245/lastwar2245.github.io",
+      "production": {
+        "status": "production",
+        "label": "Site public en production",
+        "url": "https://lastwar2245.github.io/"
+      },
+      "visual": {
+        "type": "emoji",
+        "value": "⚔️🧟",
+        "source": "site-header"
+      },
+      "previews": [],
+      "root_files": [
+        "project.json"
+      ],
+      "production_files": [
+        "index.html"
+      ]
+    },
+    {
+      "id": "madanotes",
+      "name": "MadaNotes",
+      "description": "Projet MadaNotes / documentation web.",
+      "repository": "nepheris/MadaNotes",
+      "production": {
+        "status": "production",
+        "label": "Site public en production",
+        "url": "https://nepheris.github.io/MadaNotes/"
+      },
+      "visual": null,
+      "previews": [],
+      "root_files": [
+        "project.json"
+      ],
+      "production_files": [
+        "index.html"
+      ]
+    },
+    {
+      "id": "nlab-json-studio",
+      "name": "nLab JSON Studio",
+      "description": "Éditeur JSON multi-vues nLab — POC validé, actuellement en test avant dépôt de sa première preview.",
+      "repository": "nepheris/nLab-Web-Framework",
+      "production": null,
+      "visual": {
+        "type": "nlab",
+        "label": "nLab"
+      },
+      "previews": [],
+      "root_files": [
+        "project.json"
+      ],
+      "production_files": []
+    },
+    {
+      "id": "recettes-du-coeur",
+      "name": "Les Recettes du Cœur",
+      "description": "Site public Les Recettes du Cœur.",
+      "repository": "recettesducoeur/recettesducoeur.github.io",
+      "production": {
+        "status": "production",
+        "label": "Site public en production",
+        "url": "https://recettesducoeur.github.io/"
+      },
+      "visual": {
+        "type": "image",
+        "url": "https://recettesducoeur.github.io/assets/images/logos/favicon.png",
+        "source": "production-favicon"
+      },
+      "previews": [],
+      "root_files": [
+        "project.json"
+      ],
+      "production_files": [
+        "index.html"
+      ]
+    }
+  ],
+  "runtime": [
+    {
+      "id": "cockpit-nlab",
+      "sha": "a40ee9d9b5264549efa0b6300c778f2875d0167a",
+      "meta": {
+        "project_id": "cockpit-nlab",
+        "display_name": "Cockpit nLab",
+        "description": "Cockpit de pilotage nLab / Control Plane.",
+        "repository": "nepheris/nLab",
+        "visual": {
+          "type": "nlab",
+          "label": "nLab"
+        },
+        "production": null
+      },
+      "tree": [
+        {
+          "path": "20260813_010956_V4",
+          "type": "tree",
+          "mode": "040000",
+          "sha": "294305e1c9570fb54eb2446cdba6fca1d651cfa5"
+        },
+        {
+          "path": "20260813_010956_V4/index.html",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "5131a27e81ac8bf1e807c3d9d792d163c00f42bc",
+          "size": 1449
+        },
+        {
+          "path": "project.json",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "ed23f569760f2e8e20d0e25ca8b737b7c713cb58",
+          "size": 245
+        }
+      ]
+    },
+    {
+      "id": "lastwar",
+      "sha": "350534ddf7ec0134209078fa3abdf0658976c997",
+      "meta": {
+        "project_id": "lastwar",
+        "display_name": "LastWar / WAR",
+        "description": "Site communautaire LastWar2245.",
+        "repository": "lastwar2245/lastwar2245.github.io",
+        "production": {
+          "status": "production",
+          "label": "Site public en production",
+          "url": "https://lastwar2245.github.io/"
+        },
+        "visual": {
+          "type": "emoji",
+          "value": "⚔️🧟",
+          "source": "site-header"
+        }
+      },
+      "tree": [
+        {
+          "path": "production-current",
+          "type": "tree",
+          "mode": "040000",
+          "sha": "dac96be6051b93800c72166c69fccecd9e50708f"
+        },
+        {
+          "path": "production-current/index.html",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "b7133297488592e9e24669c0d36fa5b98b005ee2",
+          "size": 388
+        },
+        {
+          "path": "project.json",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "0fc13893067e88b8d9ad15f83cec497b5b957213",
+          "size": 402
+        }
+      ]
+    },
+    {
+      "id": "madanotes",
+      "sha": "a5d3b6ed275e53b5ee76bdef9ddf12183623a2c0",
+      "meta": {
+        "project_id": "madanotes",
+        "display_name": "MadaNotes",
+        "description": "Projet MadaNotes / documentation web.",
+        "repository": "nepheris/MadaNotes",
+        "production": {
+          "status": "production",
+          "label": "Site public en production",
+          "url": "https://nepheris.github.io/MadaNotes/"
+        }
+      },
+      "tree": [
+        {
+          "path": "production-current",
+          "type": "tree",
+          "mode": "040000",
+          "sha": "2ac29cb9e18979aca40a9f5fbfdb3a3c55ba1117"
+        },
+        {
+          "path": "production-current/index.html",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "fc1146597417ceb7ed800942355001d0fc63b9b9",
+          "size": 411
+        },
+        {
+          "path": "project.json",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "3a49ab37c82f358cb1b4c5c78e2ae19c2ac40821",
+          "size": 303
+        }
+      ]
+    },
+    {
+      "id": "nlab-json-studio",
+      "sha": "4d887a42c7ed1de6731f90d08612706e0fcd5dd7",
+      "meta": {
+        "project_id": "nlab-json-studio",
+        "display_name": "nLab JSON Studio",
+        "description": "Éditeur JSON multi-vues nLab — POC validé, actuellement en test avant dépôt de sa première preview.",
+        "repository": "nepheris/nLab-Web-Framework",
+        "production": null,
+        "visual": {
+          "type": "nlab",
+          "label": "nLab"
+        },
+        "preview_status": {
+          "state": "testing",
+          "label": "En cours de test — première preview à venir"
+        },
+        "source": {
+          "issue": "https://github.com/nepheris/nLab-Web-Framework/issues/57",
+          "component": "JsonStudio"
+        }
+      },
+      "tree": [
+        {
+          "path": "project.json",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "301d104a55e8bd54ab8a81ecc5a9a0e065db102c",
+          "size": 568
+        }
+      ]
+    },
+    {
+      "id": "recettes-du-coeur",
+      "sha": "b66d05fc70f6ec7a7f0d692c44330204f8fb86a1",
+      "meta": {
+        "project_id": "recettes-du-coeur",
+        "display_name": "Les Recettes du Cœur",
+        "description": "Site public Les Recettes du Cœur.",
+        "repository": "recettesducoeur/recettesducoeur.github.io",
+        "visual": {
+          "type": "image",
+          "url": "https://recettesducoeur.github.io/assets/images/logos/favicon.png",
+          "source": "production-favicon"
+        },
+        "production": {
+          "status": "production",
+          "label": "Site public en production",
+          "url": "https://recettesducoeur.github.io/"
+        }
+      },
+      "tree": [
+        {
+          "path": "production-current",
+          "type": "tree",
+          "mode": "040000",
+          "sha": "e7c1ff59efba044eac681c8e595e67c347c4a5d1"
+        },
+        {
+          "path": "production-current/index.html",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "d6a9c9f830c3d6072a4c2a8b715a4b1220481101",
+          "size": 414
+        },
+        {
+          "path": "project.json",
+          "type": "blob",
+          "mode": "100644",
+          "sha": "6a7e939be5c53919165f909ef12a06767fcffd15",
+          "size": 495
+        }
+      ]
+    }
+  ]
+}
