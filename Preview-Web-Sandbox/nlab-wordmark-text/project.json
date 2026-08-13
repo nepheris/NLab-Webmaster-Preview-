@@ -7,5 +7,11 @@
     "type": "nlab",
     "label": "nLab"
   },
-  "production": null
+  "production": null,
+  "preview_status": {
+    "state": "validated",
+    "label": "Mini-logo texte nLab validé",
+    "validated_at": "2026-08-13T12:00:00+02:00",
+    "validated_by": "HUMAN"
+  }
 }

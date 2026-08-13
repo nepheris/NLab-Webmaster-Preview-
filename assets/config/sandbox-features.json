@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0.0",
-  "updated_at": "2026-08-13T10:51:49.393Z",
+  "schema_version": "2.0.0",
+  "updated_at": "2026-08-13T12:00:00+02:00",
   "categories": [
     {
       "id": "github",
@@ -9,6 +9,10 @@
     {
       "id": "governance",
       "label": "Gouvernance"
+    },
+    {
+      "id": "brand",
+      "label": "Identité visuelle"
     },
     {
       "id": "quality",
@@ -56,6 +60,32 @@
           "kind": "page"
         }
       ]
+    },
+    {
+      "id": "nlab-mini-logo-text",
+      "category": "brand",
+      "name": "nLab — Mini-logo texte",
+      "version": "V1.0",
+      "status": "validated",
+      "summary": "Wordmark canonique nLab validé : n bleu #3282CA, Lab gris #8F98A6, avec repli strict nLab sans couleur.",
+      "acceptance": [
+        "La graphie canonique est strictement nLab.",
+        "La version colorée utilise n #3282CA et Lab #8F98A6.",
+        "Le repli sans couleur conserve la même graphie.",
+        "La validation humaine est enregistrée au 13/08/2026 à 12:00 Europe/Paris."
+      ],
+      "previews": [
+        {
+          "label": "Mini-logo texte validé",
+          "url": "Preview-Web-Sandbox/nlab-wordmark-text/",
+          "kind": "page"
+        }
+      ],
+      "validation": {
+        "state": "validated",
+        "validated_at": "2026-08-13T12:00:00+02:00",
+        "validated_by": "HUMAN"
+      }
     },
     {
       "id": "lighthouse-benchmark",
