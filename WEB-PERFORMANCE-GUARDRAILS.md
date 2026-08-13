@@ -32,7 +32,9 @@ Une fonctionnalité qui marche mais rend l'interface instable, bloque le navigat
 
 - Un changement d'onglet local ne doit produire aucune requête.
 - L'arbre de navigation public doit être construit une fois au déploiement, chargé depuis un snapshot statique au démarrage, puis rester local pendant toute la session.
-- Aucun rescan GitHub automatique après le chargement initial ; seule une action humaine explicite « Actualiser » peut reconstruire l'inventaire distant.
+- Aucun rescan GitHub automatique après le chargement initial ; seules les actions humaines explicites `Actualiser l’arborescence` ou `F5` peuvent relire le snapshot ou reconstruire l’inventaire.
+- Les modifications sont accumulées localement. `Enregistrer` constitue un lot unique et, si une session authentifiée existe, émet au maximum une demande de synchronisation depuis le navigateur.
+- Distinguer les requêtes d’assets statiques cacheables (HTML, JS, SVG, JSON de configuration) des appels API : le budget strict porte en priorité sur les appels API et les synchronisations.
 - Cache des métadonnées et réponses stables.
 - Dédupliquer les requêtes concurrentes identiques.
 - Pas de polling fréquent par défaut; préférer événements/webhooks lorsque l'architecture le permet.

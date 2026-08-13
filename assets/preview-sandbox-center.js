@@ -5,6 +5,9 @@ const VERSION='V2.0';
 const CATALOG_URL='assets/config/sandbox-features.json';
 const AUTH_URL='assets/config/private-data-auth.json';
 const STORE_KEY='nlab-preview-sandbox-reviews-v1';
+const BATCH_KEY='nlab-preview-sync-batch-v1';
+const PREVIEW_REVIEWS_KEY='nlab-preview-reviews-v1';
+const PREFS_KEY='nlab-preview-prefs-v2';
 const DECISIONS={
   review:{label:'À examiner',tone:'muted'},
   keep:{label:'À conserver',tone:'ok'},
@@ -50,7 +53,7 @@ function renderFeature(id){
   host.innerHTML=`<div class="sandbox-feature-head"><div><div><span class="sandbox-status">${esc(feature.status)} · ${esc(feature.version)}</span> ${decisionBadge(review)}</div><h2>${esc(feature.name)}</h2><p>${esc(feature.summary)}</p></div></div>
   <div class="sandbox-grid">
     <div class="sandbox-card"><h3>Critères du POC</h3><ul class="sandbox-checks">${(feature.acceptance||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h3 style="margin-top:13px">Rendus et previews</h3><div class="sandbox-preview-list">${(feature.previews||[]).map(p=>`<a class="sandbox-preview" target="_blank" rel="noopener" href="${esc(p.url)}"><b>${esc(p.label)}</b><span>↗</span></a>`).join('')||'<div class="sandbox-empty">Aucun rendu lié.</div>'}</div></div>
-    <div class="sandbox-card"><h3>Décision humaine</h3><div class="sandbox-decisions">${Object.entries(DECISIONS).map(([value,d])=>`<label class="sandbox-choice"><input type="radio" name="sandboxDecision" value="${value}" ${review.decision===value?'checked':''}><span>${esc(d.label)}</span></label>`).join('')}</div><h3 style="margin-top:12px">Instructions / modifications</h3><textarea class="sandbox-instructions" id="sandboxInstructions" placeholder="Décrire les corrections ou conditions de validation…">${esc(review.instructions)}</textarea><div class="sandbox-actions"><button class="primary" id="sandboxSave">Enregistrer localement</button><button id="sandboxExportOne">Exporter cette fiche</button></div><div class="sandbox-sync"><b>${review.sync_state==='pending'?'En attente de synchronisation':'État local'}</b><span>${review.updated_at?`Dernière modification : ${new Intl.DateTimeFormat('fr-FR',{dateStyle:'short',timeStyle:'short'}).format(new Date(review.updated_at))}`:'Aucune décision enregistrée.'}</span><span>La synchronisation distante sera tentée après une connexion authentifiée disponible.</span></div></div>
+    <div class="sandbox-card"><h3>Décision humaine</h3><div class="sandbox-decisions">${Object.entries(DECISIONS).map(([value,d])=>`<label class="sandbox-choice"><input type="radio" name="sandboxDecision" value="${value}" ${review.decision===value?'checked':''}><span>${esc(d.label)}</span></label>`).join('')}</div><h3 style="margin-top:12px">Instructions / modifications</h3><textarea class="sandbox-instructions" id="sandboxInstructions" placeholder="Décrire les corrections ou conditions de validation…">${esc(review.instructions)}</textarea><div class="sandbox-actions"><button class="primary" id="sandboxSave">Ajouter au lot</button><button id="sandboxExportOne">Exporter cette fiche</button></div><div class="sandbox-sync"><b>${review.sync_state==='pending'?'En attente de synchronisation':'État local'}</b><span>${review.updated_at?`Dernière modification : ${new Intl.DateTimeFormat('fr-FR',{dateStyle:'short',timeStyle:'short'}).format(new Date(review.updated_at))}`:'Aucune décision enregistrée.'}</span><span>La synchronisation distante sera tentée après une connexion authentifiée disponible.</span></div></div>
   </div>`;
   q('#sandboxSave').onclick=()=>saveReview(id,q('input[name="sandboxDecision"]:checked')?.value||'review',q('#sandboxInstructions').value);
   q('#sandboxExportOne').onclick=()=>downloadJson(buildExport([id]),`sandbox-${id}.json`);
@@ -63,20 +66,27 @@ function downloadJson(data,name){const blob=new Blob([JSON.stringify(data,null,2
 async function importJson(file){
   try{const data=JSON.parse(await file.text()),incoming=data?.contenu?.reviews||[],store=readStore();store.items=store.items||{};for(const row of incoming){if(!featureById(row.feature_id)||!row.review)continue;store.items[row.feature_id]={...row.review,sync_state:'pending',updated_at:new Date().toISOString()}}writeStore(store);renderFeature(currentFeature||catalog.features[0]?.id)}catch(error){alert(`Import impossible : ${error.message}`)}
 }
-async function trySync(){
-  const count=pendingCount();if(!count)return;
-  try{
-    const cfg=await fetch(`${AUTH_URL}?v=${Date.now()}`,{cache:'no-store'}).then(r=>r.json());
-    if(!cfg.session_status_url||!cfg.feedback_sync_url)return;
-    const sessionUrl=new URL(cfg.session_status_url,document.baseURI),syncUrl=new URL(cfg.feedback_sync_url,document.baseURI);
-    if(sessionUrl.origin!==location.origin||syncUrl.origin!==location.origin)return;
-    const session=await fetch(sessionUrl,{credentials:'include',cache:'no-store'}).then(r=>r.ok?r.json():null);
-    if(!session?.authenticated)return;
-    const response=await fetch(syncUrl,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(buildExport())});
-    if(!response.ok)return;
-    const store=readStore();Object.values(store.items||{}).forEach(x=>{if(x.sync_state==='pending')x.sync_state='synced'});writeStore(store);renderFeature(currentFeature||catalog.features[0]?.id);
-  }catch{}
+function safeLocal(key,fallback){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}catch{return fallback}}
+function captureOpenFeature(){const instructions=q('#sandboxInstructions'),choice=q('input[name="sandboxDecision"]:checked');if(currentFeature&&instructions&&choice){const store=readStore();store.items=store.items||{};store.items[currentFeature]={decision:choice.value,instructions:instructions.value.trim(),updated_at:new Date().toISOString(),sync_state:'pending'};writeStore(store)}}
+function buildBatch(requestedAt){
+  return {metadonnees:{schema_version:'1.0.0',document_type:'WEBMASTER_PREVIEW_SAVE_BATCH',created_at:requestedAt||new Date().toISOString(),mode:'manual-batch'},contenu:{preview_reviews:safeLocal(PREVIEW_REVIEWS_KEY,{}),sandbox_reviews:readStore(),preferences:safeLocal(PREFS_KEY,{})},dictionnaire_donnees:{preview_reviews:'Avis de la galerie principale.',sandbox_reviews:'Décisions et instructions du Centre Bac à sable.',preferences:'Préférences locales utiles à la reprise de session.'}};
 }
+function queueBatch(requestedAt){captureOpenFeature();const batch=buildBatch(requestedAt);localStorage.setItem(BATCH_KEY,JSON.stringify(batch));paintPending();return batch}
+async function syncBatch(batch){
+  const state=window.__nlabGithubState;
+  const endpoint=state?.config?.feedback_sync_url;
+  if(!state?.authenticated||!endpoint)return {status:'queued',message:'Enregistré localement · lot en attente de connexion'};
+  const syncUrl=new URL(endpoint,document.baseURI);
+  if(syncUrl.origin!==location.origin)return {status:'queued',message:'Enregistré localement · endpoint de synchronisation refusé'};
+  try{
+    const response=await fetch(syncUrl,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(batch)});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    localStorage.removeItem(BATCH_KEY);
+    const store=readStore();Object.values(store.items||{}).forEach(x=>{if(x.sync_state==='pending')x.sync_state='synced'});writeStore(store);if(currentFeature)renderFeature(currentFeature);
+    return {status:'synced',message:'Enregistré · lot synchronisé en une seule demande'};
+  }catch(error){return {status:'queued',message:`Enregistré localement · synchronisation différée (${error.message})`}}
+}
+async function handleSaveRequest(event){const batch=queueBatch(event.detail?.requested_at);const result=await syncBatch(batch);document.dispatchEvent(new CustomEvent('nlab:save-result',{detail:result}))}
 function makePanel(){
   let panel=q('#sandboxCenter');if(panel)return panel;
   panel=document.createElement('section');panel.id='sandboxCenter';panel.className='sandbox-panel';panel.hidden=true;
@@ -87,12 +97,12 @@ function installButton(){
   const toolbar=q('.toolbar');if(!toolbar||q('#sandboxCenterBtn'))return;
   const button=document.createElement('button');button.id='sandboxCenterBtn';button.className='btn sandbox-center-btn';button.type='button';button.innerHTML=`${icon()}<span>Bac à sable</span><span class="sandbox-count"></span>`;
   const github=q('#v14GithubCenter');github?toolbar.insertBefore(button,github):toolbar.appendChild(button);
-  button.onclick=()=>{const panel=makePanel();panel.hidden=false;renderBook();renderFeature(currentFeature||catalog.features[0]?.id);trySync()};paintPending();
+  button.onclick=()=>{const panel=makePanel();panel.hidden=false;renderBook();renderFeature(currentFeature||catalog.features[0]?.id)};paintPending();
 }
 async function loadCatalog(){
   try{const response=await fetch(`${CATALOG_URL}?v=${Date.now()}`,{cache:'no-store'});if(!response.ok)throw new Error(`HTTP ${response.status}`);catalog=await response.json();currentFeature=catalog.features[0]?.id||null}catch(error){catalog={categories:[],features:[]};const host=q('#sandboxWork');if(host)host.innerHTML=`<div class="sandbox-empty">Catalogue indisponible : ${esc(error.message)}</div>`}
 }
 function paintVersion(){const badge=q('.v14-version');if(badge)badge.textContent=VERSION;const foot=q('.foot');if(foot)foot.innerHTML=`<span class="v14-foot-version">nLab Webmaster Preview · ${VERSION}</span> · Preview, POC et validation.`}
-async function init(){paintVersion();makePanel();installButton();await loadCatalog();renderBook();if(currentFeature)renderFeature(currentFeature);trySync();setTimeout(()=>{paintVersion();installButton()},500)}
+async function init(){paintVersion();makePanel();installButton();await loadCatalog();renderBook();if(currentFeature)renderFeature(currentFeature);document.addEventListener('nlab:save-request',handleSaveRequest);setTimeout(()=>{paintVersion();installButton()},500)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

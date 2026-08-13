@@ -51,6 +51,7 @@ jobs:
           node --check _site/assets/runtime/public-inventory.js
           python3 -m json.tool _site/assets/runtime/public-inventory.json >/dev/null
           node scripts/smoke_test_public_runtime.mjs _site/assets/runtime/public-inventory.js
+          node scripts/smoke_test_network_contract.mjs .
 
           python3 - <<'PY'
           from pathlib import Path

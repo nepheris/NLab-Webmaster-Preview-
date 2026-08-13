@@ -6,6 +6,7 @@ const AUTH_CFG='assets/config/private-data-auth.json';
 const MODE_KEY='nlab-preview-github-mode-v19';
 const LEGACY_TOKEN_KEY='nlab-preview-github-user-token';
 const q=(s,r=document)=>r.querySelector(s);
+let configPromise=null;
 
 const style=document.createElement('style');
 style.textContent=`
@@ -34,9 +35,8 @@ function setResult(text,kind=''){
   result.className=`v14-result ${kind}`.trim();
 }
 async function readConfig(){
-  const response=await fetch(`${AUTH_CFG}?v=${Date.now()}`,{cache:'no-store'});
-  if(!response.ok)throw new Error(`configuration HTTP ${response.status}`);
-  return response.json();
+  if(!configPromise)configPromise=fetch(AUTH_CFG,{cache:'default'}).then(response=>{if(!response.ok)throw new Error(`configuration HTTP ${response.status}`);return response.json()});
+  return configPromise;
 }
 function safeOauthUrl(value){
   if(!value)return null;
@@ -99,8 +99,11 @@ async function renderCenter(){
   if(!body)return;
   let config={};
   try{config=await readConfig()}catch(error){config={status:'unavailable',error:error.message}}
-  const session=await sessionState(config);
+  const wantsAuth=selectedMode()==='authenticated';
+  const session=wantsAuth?await sessionState(config):{authenticated:false};
   const authenticated=!!session.authenticated;
+  window.__nlabGithubState={config,session,authenticated,mode:authenticated?'authenticated':'public'};
+  document.dispatchEvent(new CustomEvent('nlab:github-state',{detail:window.__nlabGithubState}));
   if(!authenticated)setSelectedMode('public');
   let shell=q('.v19-mode-shell',body);
   if(!shell){shell=document.createElement('div');body.prepend(shell)}
@@ -133,9 +136,11 @@ async function renderCenter(){
 }
 function init(){
   clearLegacyToken();
+  window.__nlabGithubState={config:null,session:null,authenticated:false,mode:'public'};
   paintVersion();
-  renderCenter();
-  setTimeout(()=>{paintVersion();renderCenter()},400);
+  paintToolbar('public',false);
+  document.addEventListener('click',event=>{if(event.target.closest?.('#v14GithubCenter'))setTimeout(renderCenter,0)},{capture:true});
+  setTimeout(paintVersion,400);
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();

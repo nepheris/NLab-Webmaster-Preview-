@@ -1,9 +1,15 @@
 {
   "schema_version": "1.0.0",
-  "updated_at": "2026-08-13T09:20:00Z",
+  "updated_at": "2026-08-13T09:45:00Z",
   "categories": [
-    {"id": "github", "label": "GitHub"},
-    {"id": "governance", "label": "Gouvernance"}
+    {
+      "id": "github",
+      "label": "GitHub"
+    },
+    {
+      "id": "governance",
+      "label": "Gouvernance"
+    }
   ],
   "features": [
     {
@@ -19,23 +25,32 @@
         "Le mode authentifié reste verrouillé tant que la passerelle OAuth n'est pas configurée."
       ],
       "previews": [
-        {"label": "Centre GitHub V1.9", "url": "./", "kind": "page"}
+        {
+          "label": "Centre GitHub V1.9",
+          "url": "./",
+          "kind": "page"
+        }
       ]
     },
     {
       "id": "sandbox-center",
       "category": "governance",
       "name": "Centre Bac à sable",
-      "version": "V2.0",
+      "version": "V2.1",
       "status": "poc",
       "summary": "Classeur de POC permettant d'examiner les fonctionnalités, conserver les décisions et préparer leur synchronisation.",
       "acceptance": [
         "Chaque fonctionnalité possède une fiche et ses rendus.",
         "Les décisions et instructions sont conservées dans le navigateur.",
-        "Une file d'attente prépare la synchronisation authentifiée future."
+        "Aucune synchronisation n'est déclenchée au chargement ou à l'ouverture du Centre.",
+        "Le bouton Enregistrer consolide un seul lot local et n'effectue qu'une demande distante lorsque la session authentifiée est disponible."
       ],
       "previews": [
-        {"label": "Centre Bac à sable intégré", "url": "./", "kind": "page"}
+        {
+          "label": "Centre Bac à sable intégré",
+          "url": "./",
+          "kind": "page"
+        }
       ]
     }
   ],

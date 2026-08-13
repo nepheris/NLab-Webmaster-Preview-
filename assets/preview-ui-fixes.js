@@ -178,7 +178,7 @@ function renderRate(rate=lastRate){
   const reset=rate.reset?fmtPrecise(rate.reset):'n.d.';
   apiQuota.textContent=`API GitHub : ${rate.remaining}/${rate.limit} · reset ${reset}`;
   apiQuota.className=rate.remaining===0?'bad':rate.remaining<=10?'warn':'';
-  apiQuota.title='Quota REST public non authentifié. Le viewer consolide désormais le scan en un seul appel REST par actualisation.';
+  apiQuota.title='Quota REST public non authentifié. Aucun scan automatique : une actualisation manuelle consolide la découverte en un seul appel d’arbre.';
 }
 document.addEventListener('nlab:github-rate',e=>renderRate(e.detail));
 renderRate();
@@ -201,7 +201,7 @@ function normalizePreciseStatus(){
   statusText.title=statusText.textContent||'';
 }
 if(statusText){new MutationObserver(normalizePreciseStatus).observe(statusText,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['data-kind']});normalizePreciseStatus()}
-if(refreshBtn){refreshBtn.addEventListener('click',()=>{treeCache={at:0,data:null};refreshBtn.classList.add('refreshing');refreshBtn.setAttribute('aria-busy','true');refreshBtn.title=`Actualisation GitHub demandée à ${fmtPrecise(new Date())}`})}
+if(refreshBtn){refreshBtn.addEventListener('click',()=>{treeCache={at:0,data:null};refreshBtn.classList.add('refreshing');refreshBtn.setAttribute('aria-busy','true');refreshBtn.title=`Actualisation manuelle de l’arborescence demandée à ${fmtPrecise(new Date())}`})}
 
 // Diagnostic du fichier de persistance publié : lecture Pages, donc aucune consommation du quota REST.
 const toolbar=document.querySelector('.toolbar');
