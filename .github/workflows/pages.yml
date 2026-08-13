@@ -67,7 +67,8 @@ jobs:
               '<script src="assets/preview-v15.js"></script>\n'
               '<script src="assets/preview-v16.js"></script>\n'
               '<script src="assets/preview-v17.js" data-nlab-v17="1"></script>\n'
-              '<script src="assets/preview-v171-hotfix.js"></script>'
+              '<script src="assets/preview-v171-hotfix.js"></script>\n'
+              '<script src="assets/preview-v19.js"></script>'
           )
           if needle not in text:
               raise SystemExit('preview-browser script marker missing')
@@ -83,6 +84,7 @@ jobs:
           node --check assets/preview-v16.js
           node --check assets/preview-v17.js
           node --check assets/preview-v171-hotfix.js
+          node --check assets/preview-v19.js
           python3 -m json.tool assets/config/priority-registry.json >/dev/null
           python3 -m json.tool assets/config/private-data-auth.json >/dev/null
           test -f Preview-Web-Sandbox/cockpit-nlab/20260813_010956_V4/index.html
@@ -208,10 +210,12 @@ jobs:
           test -f _site/assets/preview-v16.js
           test -f _site/assets/preview-v17.js
           test -f _site/assets/preview-v171-hotfix.js
+          test -f _site/assets/preview-v19.js
           test -f _site/assets/runtime/public-inventory.js
           test -f _site/assets/runtime/public-inventory.json
           test -s _site/assets/runtime/images/recettes-du-coeur.png
           grep -q "const VERSION='V1.8'" _site/assets/preview-v171-hotfix.js
+          grep -q "const VERSION='V1.9'" _site/assets/preview-v19.js
           test -f _site/assets/config/priority-registry.json
           test -f _site/assets/config/private-data-auth.json
           test -f _site/Preview-Web-Sandbox/README.md

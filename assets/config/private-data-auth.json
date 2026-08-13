@@ -7,5 +7,11 @@
   "private_repository_id": 1330178228,
   "test_path": "Data/poc/private-access-test.json",
   "required_repository_permission": "contents:read",
-  "notes": "Configuration publique sans secret. Le client_id sera renseigné après enregistrement de la GitHub App. Aucun client_secret, PAT ou jeton utilisateur ne doit être commité ici."
+  "notes": "Configuration publique sans secret. Le mode public rapide est actif par défaut. Le mode authentifié étendu sera activé après enregistrement de la GitHub App et déploiement de la passerelle OAuth. Aucun client_secret, PAT ou jeton utilisateur ne doit être commité ni conservé dans le stockage JavaScript.",
+  "oauth_start_url": "",
+  "session_status_url": "",
+  "logout_url": "",
+  "session_transport": "http-only-secure-samesite-cookie",
+  "default_mode": "public",
+  "authenticated_mode": "extended"
 }
