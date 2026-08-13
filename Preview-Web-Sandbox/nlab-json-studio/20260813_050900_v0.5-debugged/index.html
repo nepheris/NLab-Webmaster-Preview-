@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mini JSON Studio POC v0.5-debug</title>
+<style>
+:root{
+ --bg:#f5f7fa;--panel:#fff;--text:#1f2937;--muted:#64748b;--border:#d7dee8;
+ --accent:#334155;--project:#eef2ff;--project2:#dbeafe;--codebg:#0f172a;--codetext:#e2e8f0;
+ --add:#bbf7d0;--del:#fecaca;--mod:#fde68a;--line:#94a3b8;
+ font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body.dark{--bg:#0b1220;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--border:#334155;--project:#172554;--project2:#1e3a8a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+header{position:sticky;top:0;z-index:50;background:#111827;color:#fff;padding:10px 12px;display:flex;gap:7px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #334155}
+header h1{font-size:17px;margin:0 10px 0 0}.ver{font-size:10px;background:#334155;padding:3px 7px;border-radius:99px}
+button,.filebtn,select,input[type=color]{border:1px solid #cbd5e1;background:#fff;color:#111827;padding:6px 8px;border-radius:6px;cursor:pointer}
+.filebtn input{display:none}.docselect{min-width:220px}#status{margin-left:auto;font-size:11px;color:#cbd5e1}
+.topmenu{position:relative}.menu{display:none;position:absolute;top:36px;right:0;min-width:230px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:60}.topmenu.open .menu{display:block}.menu label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0;font-size:12px}
+.tabs{display:flex;gap:3px;padding:7px 9px;background:var(--panel);border-bottom:1px solid var(--border);overflow:auto;position:sticky;top:54px;z-index:40}
+.tabs button{white-space:nowrap}.tabs .project{background:var(--project);border-color:#a5b4fc}.tabs button.active{font-weight:700;box-shadow:inset 0 -3px 0 #334155}.tabs .project.active{background:var(--project2);box-shadow:inset 0 -3px 0 #4f46e5}
+main{padding:10px}.view{display:none}.view.active{display:block}.panel{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:10px}
+.notice{padding:8px 10px;border-radius:7px;background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe;font-size:12px;margin-bottom:8px}.warn{background:#fffbeb;color:#92400e;border-color:#fde68a}.bad{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+.toolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}.toolbar label{font-size:11px;color:var(--muted)}
+/* raw */
+.raw-simple,.raw-diff{display:none}.raw-simple.active,.raw-diff.active{display:block}
+.codebox{display:grid;grid-template-columns:auto 1fr;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--panel)}
+.gutter{background:#e2e8f0;color:#475569;padding:9px 7px 9px 10px;text-align:right;font:12px/1.5 ui-monospace,monospace;user-select:none;white-space:pre}
+body.dark .gutter{background:#1f2937;color:#94a3b8}
+.rawarea{border:0;outline:0;width:100%;height:60vh;min-height:420px;resize:vertical;padding:9px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#fff;color:#111827;white-space:pre}
+body.dark .rawarea{background:#0f172a;color:#e2e8f0}
+.syntaxpre{margin:0;padding:9px;font:12px/1.5 ui-monospace,monospace;white-space:pre;background:var(--codebg);color:var(--codetext)}
+.syntaxpre .k,.editorHighlight .k{color:#60a5fa}.syntaxpre .s,.editorHighlight .s{color:#22c55e}.syntaxpre .n,.editorHighlight .n{color:#f43f5e}.syntaxpre .b,.editorHighlight .b{color:#d97706}.syntaxpre .null,.editorHighlight .null{color:#8b5cf6}
+.diffgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:1100px;align-items:start}
+.diffSharedScroll{overflow:auto;max-height:62vh;border:1px solid var(--border);border-radius:8px;padding:0 0 12px}
+.diffPane{min-width:520px}.diffPane .codebox{border-radius:0;border-left:0;border-right:0}
+.diffLabel{padding:7px 9px;font-weight:800;font-size:12px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:4}
+.diffLabel.baseline{background:#fee2e2;color:#991b1b}.diffLabel.active{background:#dcfce7;color:#166534}
+.diffSharedScroll .syntaxpre{min-height:560px;height:auto;overflow:visible}
+.diffSharedScroll .gutter{min-height:560px}
+.editorLayer{position:relative;min-height:560px;background:#fff}
+.editorHighlight{position:absolute;inset:0;margin:0;padding:9px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;pointer-events:none;color:#111827;min-width:max-content}
+.editorLayer textarea{position:relative;z-index:2;display:block;border:0;outline:0;width:100%;min-width:520px;min-height:560px;height:auto;resize:none;overflow:hidden;padding:9px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;background:transparent;color:transparent;caret-color:#111827}
+body.dark .editorLayer{background:#fff}.editorLayer textarea::selection{background:rgba(59,130,246,.25)}
+.diffdrawer{margin-top:8px;border:1px solid var(--border);border-radius:7px;overflow:hidden}.drawerhead{display:flex;justify-content:space-between;padding:6px 8px;background:#e2e8f0;color:#334155}.drawerbody{max-height:220px;overflow:auto;background:var(--panel)}.drawerbody.collapsed{display:none}
+.diffline{display:grid;grid-template-columns:52px 52px 1fr;font:11px/1.45 ui-monospace,monospace;padding:2px 6px}.diffline.add{background:var(--add)}.diffline.del{background:var(--del)}.diffline.mod{background:var(--mod)}
+/* split/hierarchy */
+.split{display:grid;grid-template-columns:33% 6px 1fr;min-height:70vh}
+.splitbar{cursor:col-resize;background:#cbd5e1;border-radius:4px}.side,.detail{border:1px solid var(--border);border-radius:7px;overflow:auto;background:var(--panel);max-height:73vh}.detail{padding:10px}
+.tree ul{list-style:none;padding-left:17px;margin:1px 0}.tree ul.hidden{display:none}.node{display:flex;align-items:center;gap:3px;padding:2px 4px;border-radius:4px}.foldbtn{width:20px;padding:0;border:0;background:transparent;color:var(--muted)}.indexkey{color:#7c3aed;font-weight:800}.objkey{color:#1d4ed8;font-weight:700}body.dark .objkey{color:#93c5fd}.node:hover,.node.sel{background:#dbeafe;color:#111827}.node .label{flex:1;cursor:pointer}.node .mini{font-size:10px;padding:1px 5px}.type{font-size:10px;color:var(--muted)}.scalar{font:11px ui-monospace,monospace;color:#0f766e}
+.contexttabs{display:flex;gap:4px;margin-bottom:7px}.contexttabs button.active{font-weight:700;background:#e2e8f0}
+.formgrid{display:grid;grid-template-columns:minmax(170px,260px) 1fr;gap:7px 10px}.formgrid label{font-weight:650;font-size:12px;padding-top:6px}.formgrid small{display:block;color:var(--muted);font-weight:400}.formgrid input,.formgrid select,.formgrid textarea{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px}.formgrid textarea{min-height:72px;resize:both}
+.nodeops{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0}
+/* generic table */
+.tableopts{display:none;padding:7px;border:1px solid var(--border);border-radius:7px;margin-bottom:7px}.tableopts.open{display:flex;gap:8px;flex-wrap:wrap}.tablewrap{overflow:auto;max-height:66vh;border:1px solid var(--border);border-radius:7px}
+table{border-collapse:collapse;width:100%;font-size:11px}th,td{border-bottom:1px solid var(--border);padding:6px;text-align:left;vertical-align:top;position:relative}th{background:#f8fafc;color:#111827;position:sticky;top:0;z-index:2;white-space:nowrap;user-select:none}.striped tbody tr:nth-child(even){background:#f8fafc}.colresizer{position:absolute;right:-2px;top:0;width:5px;height:100%;cursor:col-resize}
+.filterrow input{width:100%;padding:3px;font-size:10px}.sortbtn{border:0;background:transparent;padding:0 3px;font-size:10px;color:#475569}.pathpicker{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.pathpicker select{min-width:130px}.tablewrap table{table-layout:fixed}.tablewrap th,.tablewrap td{overflow:hidden;text-overflow:ellipsis}.striped tbody tr:nth-child(even){background:#eef2f7}body.dark .striped tbody tr:nth-child(even){background:#182235}
+/* dashboard */
+.projectshell{background:var(--project);border:1px solid #a5b4fc;border-radius:9px;padding:8px}.metricgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.metric{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:8px}.metric b{font-size:21px;display:block}.blockmetric{border:2px solid #ef4444}
+.timeline{display:flex;gap:3px;margin:10px 0;overflow:auto}.tphase{min-width:120px;flex:1;border:1px solid var(--border);background:var(--panel);padding:7px;border-radius:7px;font-size:10px}.tphase.current{outline:2px solid #4f46e5}.bar{height:7px;background:#e5e7eb;border-radius:99px;overflow:hidden}.bar span{display:block;height:100%;background:#475569}
+details.section{border:1px solid var(--border);border-radius:7px;background:var(--panel);margin-top:7px}details.section summary{padding:8px;cursor:pointer;font-weight:700}details.section>div{padding:8px}
+/* gantt */
+.gcontrols{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:7px}.gantt{overflow:auto;border:1px solid var(--border);border-radius:7px;background:var(--panel)}.ggrid{min-width:1080px}.grow{display:grid;grid-template-columns:310px repeat(31,30px);min-height:30px;border-bottom:1px solid #eef2f7}.gname{position:sticky;left:0;z-index:2;background:var(--panel);padding:5px;border-right:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gday{font-size:9px;text-align:center;padding-top:7px;border-right:1px solid #f1f5f9}.gbarwrap{grid-column:var(--s)/var(--e);padding:4px 1px;position:relative}.gbar{height:20px;border:1px solid rgba(0,0,0,.2);border-radius:4px;overflow:hidden;display:flex;background:#e5e7eb;cursor:pointer}.seg{height:100%}.aHUMAN-USER{background:#fde68a}.aCHATGPT{background:#bfdbfe}.aAGENT-A{background:#bbf7d0}.aAGENT-B{background:#ddd6fe}.gphase .gname{font-weight:800;background:#eef2ff;color:#1e1b4b}.gphase .gbar{background:#c7d2fe}.phaseweight{display:flex;height:28px;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:7px}.phaseweight>div{display:flex;align-items:center;justify-content:center;font-size:9px;border-right:1px solid #fff;min-width:40px;background:#dbeafe;color:#111827}
+.floatcard{position:fixed;right:18px;bottom:18px;width:330px;max-height:60vh;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:9px;box-shadow:0 12px 40px rgba(0,0,0,.25);padding:9px;z-index:70}.floatcard.hidden{display:none}.floathead{display:flex;justify-content:space-between;gap:4px;align-items:center;cursor:move}
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:7px}.card{border:1px solid var(--border);border-radius:7px;background:var(--panel);padding:8px}.card h3{font-size:13px;margin:0 0 5px}.kv{display:grid;grid-template-columns:100px 1fr;gap:3px 6px;font-size:11px}.kv b{color:var(--muted)}
+@media(max-width:850px){.diffgrid,.split{grid-template-columns:1fr}.splitbar{display:none}.formgrid{grid-template-columns:1fr}#status{width:100%;margin-left:0}}
+
+/* v0.5 */
+.lineFilterBox{display:flex;gap:5px;align-items:center}.lineFilterBox input{width:160px}
+.lineMark{display:block;background:rgba(250,204,21,.28);box-shadow:inset 3px 0 #eab308}.gutter .lineMark{background:rgba(250,204,21,.48);color:#111827}
+.settingsGrid{display:grid;grid-template-columns:145px 54px 105px;gap:6px;align-items:center;font-size:11px;max-height:52vh;overflow:auto}.settingsGrid input[type=color]{width:48px;height:28px;padding:2px}.settingsGrid input[type=text]{width:100px}
+.kpiProgress{height:46px;border:1px solid var(--border);border-radius:9px;position:relative;overflow:hidden;background:var(--panel);margin:8px 0}.kpiProgress .fill{height:100%;background:#bfdbfe}.kpiProgress .txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}
+.compactMetrics{display:flex;gap:6px;flex-wrap:wrap}.compactMetrics .metric{flex:0 1 135px;min-width:120px}
+.cockpitFlow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px;margin:8px 0}.cockpitPhase{border-left:6px solid var(--phaseColor,#94a3b8);background:var(--panel);padding:7px;border-radius:6px;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.catalogPath{cursor:pointer;color:#2563eb;text-decoration:underline}.openLink{font-size:11px;margin-left:5px}
+.ganttFilters{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:7px}.ganttFilters input{max-width:160px}.phaseLegend{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.phaseLegend span{font-size:10px;padding:3px 6px;border-radius:99px;color:#111827;border:1px solid rgba(0,0,0,.15)}
+.agentHead{display:flex;align-items:center;gap:8px}.agentDot{width:14px;height:14px;border-radius:50%;border:1px solid #64748b}.agentLog{margin-top:8px;max-height:190px;overflow:auto}.agentLog table{font-size:10px}
+</style>
+</head>
+<body>
+<header>
+ <h1>Mini JSON Studio <span class="ver">POC v0.5-debug</span></h1>
+ <label class="filebtn">Ajouter JSON<input id="fileInput" type="file" accept=".json,application/json" multiple></label>
+ <select id="demoSelect"><option value="">Ajouter une démo…</option></select>
+ <select id="docSelect" class="docselect"></select>
+ <button id="closeDoc">Fermer</button>
+ <button id="saveBtn">Enregistrer JSON</button><button id="exportBtn">Exporter sous…</button>
+ <div class="topmenu"><button id="displayBtn">Affichage 🎨</button><div class="menu" id="displayMenu"><div id="displaySettings"></div></div></div><div class="topmenu"><button id="themeBtn">Thème ⚙</button><div class="menu" id="themeMenu">
+   <label>Mode <select id="themeMode"><option value="light">Clair</option><option value="dark">Sombre</option><option value="custom">Personnalisé</option></select></label>
+   <label>Fond <input id="bgColor" type="color" value="#f5f7fa"></label>
+   <label>Coloration JSON <input id="syntaxToggle" type="checkbox" checked></label>
+   <label>Numéros de lignes <input id="lineToggle" type="checkbox" checked></label>
+ </div></div>
+ <span id="status">Prêt</span>
+</header>
+
+<nav class="tabs" id="tabs">
+ <button data-view="raw" class="active">RAW</button>
+ <button data-view="hierarchy">Hiérarchie</button>
+ <button data-view="table">Table</button>
+ <button data-view="form">Formulaire</button>
+ <button data-view="overview" class="project">Projet — synthèse</button>
+ <button data-view="catalog" class="project">Projet — catalogue</button>
+ <button data-view="dictionary" class="project">Projet — dictionnaire</button>
+ <button data-view="joins" class="project">Projet — jointures</button>
+ <button data-view="roadmap" class="project">Projet — roadmap</button>
+ <button data-view="gantt" class="project">Projet — Gantt</button>
+ <button data-view="tasks" class="project">Projet — tâches</button>
+ <button data-view="agents" class="project">Projet — agents</button>
+</nav>
+
+<main>
+<section id="raw" class="view active"><div class="panel">
+ <div class="toolbar">
+  <button id="rawSimpleBtn">Mode simple</button><button id="rawDiffBtn">Mode différentiel</button>
+  <button id="formatBtn">Formater</button><button id="applyBtn">Appliquer</button><button id="newBaseline">Définir comme nouvelle référence</button><span class="lineFilterBox"><label>Lignes</label><input id="lineFilter" placeholder="30, 10-20, 1,3,57"><button id="lineGo">Surligner</button><button id="lineClear">Effacer</button></span>
+ </div>
+ <div class="raw-simple active" id="rawSimple"><div class="codebox"><pre class="gutter" id="gutter1"></pre><div class="editorLayer"><pre class="editorHighlight" id="simpleHighlight"></pre><textarea class="rawarea" id="rawText" spellcheck="false"></textarea></div></div></div>
+ <div class="raw-diff" id="rawDiff">
+  <div class="diffSharedScroll" id="diffSharedScroll">
+   <div class="diffgrid">
+    <div class="diffPane">
+     <div class="diffLabel baseline">🔒 Baseline d’ouverture — lecture seule</div>
+     <div class="codebox"><pre class="gutter" id="gutterBase"></pre><pre class="syntaxpre" id="basePre"></pre></div>
+    </div>
+    <div class="diffPane">
+     <div class="diffLabel active">● Version active — modifiable</div>
+     <div class="codebox"><pre class="gutter" id="gutterWork"></pre><div class="editorLayer"><pre class="editorHighlight" id="workHighlight"></pre><textarea id="workText" spellcheck="false"></textarea></div></div>
+    </div>
+   </div>
+  </div>
+  <div class="diffdrawer"><div class="drawerhead"><b>Diff</b><span><button id="diffColors">Couleurs</button><button id="diffToggle">Réduire</button></span></div><div class="drawerbody" id="diffBody"></div></div>
+ </div>
+</div></section>
+
+<section id="hierarchy" class="view"><div class="panel">
+ <div class="toolbar"><button id="expandAll">Tout déplier</button><button id="collapseAll">Tout replier</button>
+ <label>Profondeur <input id="depthRange" type="range" min="1" max="8" value="8"></label><span id="depthLabel">8</span>
+ <button id="toggleLeft">Afficher/masquer arbre</button><button id="toggleRight">Afficher/masquer panneau</button></div>
+ <div class="split" id="hierSplit"><div class="side"><div id="treeOut" class="tree"></div></div><div class="splitbar" id="splitbar"></div><div class="detail">
+   <div class="contexttabs"><button data-cmode="edit" class="active">Édition</button><button data-cmode="info">Dictionnaire</button></div>
+   <div id="contextOut"></div>
+ </div></div>
+</div></section>
+
+<section id="table" class="view"><div class="panel">
+ <div class="toolbar"><label><b>Racine du tableau</b></label><div id="pathPicker" class="pathpicker"></div><label>Chemin <input id="tablePath" value="$"></label><button id="tableRefresh">Afficher</button><button id="tableOptionsBtn">Options</button></div>
+ <div class="tableopts" id="tableOpts"><label>Lignes alternées <input id="stripedToggle" type="checkbox" checked></label><label>Filtres colonnes <input id="filterToggle" type="checkbox"></label></div>
+ <div id="tableOut" class="tablewrap striped"></div>
+</div></section>
+
+<section id="form" class="view"><div class="panel"><div class="notice">Édition du nœud sélectionné dans Hiérarchie.</div><div id="formOut"></div></div></section>
+
+<section id="overview" class="view"><div class="projectshell"><div class="panel"><div id="metrics" class="metricgrid"></div><div id="timeline" class="timeline"></div><div id="overviewOut"></div></div></div></section>
+<section id="catalog" class="view"><div class="projectshell"><div class="panel"><div id="catalogOut" class="cards"></div></div></div></section>
+<section id="dictionary" class="view"><div class="projectshell"><div class="panel"><div id="dictionaryOut" class="cards"></div></div></div></section>
+<section id="joins" class="view"><div class="projectshell"><div class="panel"><div class="notice warn">Déclarations uniquement — moteur de jointure non implémenté.</div><div id="joinsOut" class="cards"></div></div></div></section>
+<section id="roadmap" class="view"><div class="projectshell"><div class="panel"><div id="roadmapOut"></div></div></div></section>
+<section id="gantt" class="view"><div class="projectshell"><div class="panel">
+ <div class="gcontrols"><button id="gExpand">Tout déplier</button><button id="gCollapse">Tout replier</button><label>Niveau <input id="gDepth" type="range" min="0" max="5" value="5"></label><span id="gDepthLabel">5</span><label>Zoom temps <input id="gZoom" type="range" min="50" max="200" value="100"></label><span id="gZoomLabel">100%</span></div><div class="ganttFilters"><label>Début <input id="gStartFilter" type="date"></label><label>Fin <input id="gEndFilter" type="date"></label><label>Lignes/tâches <input id="gRowFilter" placeholder="1-3,5,8"></label><button id="gApplyFilters">Filtrer</button><button id="gClearFilters">Réinitialiser</button></div><div id="phaseLegend" class="phaseLegend"></div>
+ <div id="phaseWeight" class="phaseweight"></div><div id="ganttOut" class="gantt"></div>
+ </div></div></section>
+<section id="tasks" class="view"><div class="projectshell"><div class="panel"><div class="toolbar"><label>Statut <select id="taskStatus"><option value="">Tous</option></select></label><label>Agent <select id="taskAgent"><option value="">Tous</option></select></label><label>Lignes <input id="taskRowFilter" placeholder="1-3,5"></label><button id="taskOptsBtn">Options table</button></div><div id="taskOptions" class="tableopts"><label>Lignes alternées <input id="taskStripedToggle" type="checkbox" checked></label></div><div id="tasksOut" class="tablewrap striped"></div></div></div></section>
+<section id="agents" class="view"><div class="projectshell"><div class="panel"><div id="agentsOut" class="cards"></div></div></div></section>
+</main>
+
+<div id="floatCard" class="floatcard hidden"><div class="floathead"><b id="floatTitle">Détail</b><span><button id="floatPin">📌</button><button id="floatClose">✕</button></span></div><div id="floatBody"></div></div>
+
+<script>
+const DEMOS = {"project-long-cycle.json":{"metadata":{"schema":"nlab.project-master","schema_version":"1.0-candidate","project_id":"DEMO-LONG","project_name":"Projet long — arrêt, reprise et V2","status":"active","priority":1,"current_phase":"MAINTENANCE_EVOLUTION","source_repository":"demo/local","roadmap_human_path":null,"rex_machine_path":null,"human_check_path":null,"extensions":{"history":["created","released-v1","paused","restarted","v2-development"]}},"data":{"goal":"Projet complexe simulant développement initial, pause, reprise, évolution V2 et préparation d’archivage.","summary":"Projet complexe simulant développement initial, pause, reprise, évolution V2 et préparation d’archivage.","next_target":"Poursuivre selon roadmap simulée.","blocking_reasons":[],"phases":[{"id":"IDEA_CREATION","label":"Idée / création","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Idée / création terminé.","blocking_criterion_met":true,"children":[{"id":"LNG-1-01","type":"task","title":"Idée / création — lot A","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-01-02","end_date":"2026-01-10"},"assignments":[{"agent_id":"CHATGPT","contribution_percent":60},{"agent_id":"HUMAN-USER","contribution_percent":40}],"last_activity_at":"2026-01-10T17:30:00+02:00"}},{"id":"LNG-1-02","type":"task","title":"Idée / création — lot B","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-01-02","end_date":"2026-01-10"},"assignments":[{"agent_id":"AGENT-A","contribution_percent":50},{"agent_id":"CHATGPT","contribution_percent":50}],"last_activity_at":"2026-01-10T17:30:00+02:00"}}],"extensions":{}},{"id":"FRAMING","label":"Cadrage","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Cadrage terminé.","blocking_criterion_met":true,"children":[{"id":"LNG-2-01","type":"task","title":"Cadrage — lot A","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-01-11","end_date":"2026-01-25"},"assignments":[{"agent_id":"CHATGPT","contribution_percent":60},{"agent_id":"HUMAN-USER","contribution_percent":40}],"last_activity_at":"2026-01-25T17:30:00+02:00"}},{"id":"LNG-2-02","type":"task","title":"Cadrage — lot B","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-01-11","end_date":"2026-01-25"},"assignments":[{"agent_id":"AGENT-A","contribution_percent":50},{"agent_id":"CHATGPT","contribution_percent":50}],"last_activity_at":"2026-01-25T17:30:00+02:00"}}],"extensions":{}},{"id":"POC_PROTOTYPE","label":"POC / prototype","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"POC / prototype terminé.","blocking_criterion_met":true,"children":[{"id":"LNG-3-01","type":"task","title":"POC / prototype — lot A","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-01-26","end_date":"2026-02-12"},"assignments":[{"agent_id":"CHATGPT","contribution_percent":60},{"agent_id":"HUMAN-USER","contribution_percent":40}],"last_activity_at":"2026-02-12T17:30:00+02:00"}},{"id":"LNG-3-02","type":"task","title":"POC / prototype — lot B","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-01-26","end_date":"2026-02-12"},"assignments":[{"agent_id":"AGENT-A","contribution_percent":50},{"agent_id":"CHATGPT","contribution_percent":50}],"last_activity_at":"2026-02-12T17:30:00+02:00"}}],"extensions":{}},{"id":"DESIGN","label":"Conception / architecture","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Conception / architecture terminé.","blocking_criterion_met":true,"children":[{"id":"LNG-4-01","type":"task","title":"Conception / architecture — lot A","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-02-13","end_date":"2026-03-03"},"assignments":[{"agent_id":"CHATGPT","contribution_percent":60},{"agent_id":"HUMAN-USER","contribution_percent":40}],"last_activity_at":"2026-03-03T17:30:00+02:00"}},{"id":"LNG-4-02","type":"task","title":"Conception / architecture — lot B","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-02-13","end_date":"2026-03-03"},"assignments":[{"agent_id":"AGENT-A","contribution_percent":50},{"agent_id":"CHATGPT","contribution_percent":50}],"last_activity_at":"2026-03-03T17:30:00+02:00"}}],"extensions":{}},{"id":"DEVELOPMENT","label":"Développement","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Développement terminé.","blocking_criterion_met":true,"children":[{"id":"LNG-5-01","type":"task","title":"Développement — lot A","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-03-04","end_date":"2026-04-28"},"assignments":[{"agent_id":"CHATGPT","contribution_percent":60},{"agent_id":"HUMAN-USER","contribution_percent":40}],"last_activity_at":"2026-04-28T17:30:00+02:00"}},{"id":"LNG-5-02","type":"task","title":"Développement — lot B","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-03-04","end_date":"2026-04-28"},"assignments":[{"agent_id":"AGENT-A","contribution_percent":50},{"agent_id":"CHATGPT","contribution_percent":50}],"last_activity_at":"2026-04-28T17:30:00+02:00"}}],"extensions":{}},{"id":"VALIDATION","label":"Validation","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Validation terminé.","blocking_criterion_met":true,"children":[{"id":"LNG-6-01","type":"task","title":"Validation — lot A","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-04-29","end_date":"2026-05-22"},"assignments":[{"agent_id":"CHATGPT","contribution_percent":60},{"agent_id":"HUMAN-USER","contribution_percent":40}],"last_activity_at":"2026-05-22T17:30:00+02:00"}},{"id":"LNG-6-02","type":"task","title":"Validation — lot B","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-04-29","end_date":"2026-05-22"},"assignments":[{"agent_id":"AGENT-A","contribution_percent":50},{"agent_id":"CHATGPT","contribution_percent":50}],"last_activity_at":"2026-05-22T17:30:00+02:00"}}],"extensions":{}},{"id":"RELEASE","label":"Livraison / release","status":"in_progress","progress":90,"progress_scope":"delivery","blocking_criterion":"Livraison / release terminé.","blocking_criterion_met":false,"children":[{"id":"LNG-7-01","type":"task","title":"Livraison / release — lot A","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-05-23","end_date":"2026-06-01"},"assignments":[{"agent_id":"CHATGPT","contribution_percent":60},{"agent_id":"HUMAN-USER","contribution_percent":40}],"last_activity_at":"2026-06-01T17:30:00+02:00"}},{"id":"LNG-7-02","type":"task","title":"Livraison / release — lot B","description":null,"status":"in_progress","progress":80,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-05-23","end_date":"2026-06-01"},"assignments":[{"agent_id":"AGENT-A","contribution_percent":50},{"agent_id":"CHATGPT","contribution_percent":50}],"last_activity_at":"2026-06-01T17:30:00+02:00"}}],"extensions":{}},{"id":"CAPITALIZATION","label":"Capitalisation / REX","status":"done","progress":100,"progress_scope":"capitalization","blocking_criterion":"Capitalisation / REX terminé.","blocking_criterion_met":true,"children":[{"id":"LNG-REX-01","type":"task","title":"REX version 1","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-06-02","end_date":"2026-06-15"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":50},{"agent_id":"CHATGPT","contribution_percent":50}],"last_activity_at":"2026-06-15T17:30:00+02:00"}}],"extensions":{}},{"id":"MAINTENANCE_EVOLUTION","label":"Maintenance / évolution","status":"in_progress","progress":55,"progress_scope":"lifecycle","blocking_criterion":"Maintenance / évolution terminé.","blocking_criterion_met":false,"children":[{"id":"LNG-MNT-01","type":"task","title":"Pause opérationnelle","description":"Projet volontairement mis en pause.","status":"deferred","progress":20,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-06-16","end_date":"2026-07-01"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":100}],"last_activity_at":"2026-07-01T17:30:00+02:00"}},{"id":"LNG-MNT-02","type":"task","title":"Reprise et version 2","description":"Redéveloppement après reprise.","status":"in_progress","progress":65,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-07-15","end_date":"2026-08-10"},"assignments":[{"agent_id":"CHATGPT","contribution_percent":40},{"agent_id":"AGENT-B","contribution_percent":60}],"last_activity_at":"2026-08-10T17:30:00+02:00"}}],"extensions":{}},{"id":"PROJECT_INACTIVE","label":"Projet inactif","status":"not_started","progress":0,"progress_scope":"lifecycle","blocking_criterion":"Projet inactif terminé.","blocking_criterion_met":false,"children":[],"extensions":{}}],"extensions":{}},"data_model":{"data_registry":[{"id":"source","kind":"project_master","format":"json","path":"./demo-long.json","source":"self","canonical":true,"derived":false,"required":true,"confidentiality":"internal","description":"Source projet."},{"id":"site","kind":"external_reference","format":"url","path":"https://example.org/projects/demo-long","source":"source","canonical":false,"derived":false,"required":false,"confidentiality":"public","description":"URL publique cliquable."},{"id":"asset","kind":"asset","format":"text","path":"hero-demo-long.webp","source":"source","canonical":false,"derived":false,"required":false,"confidentiality":"internal","description":"Nom de fichier image."}],"relation_registry":[],"view_registry":[{"id":"roadmap","type":"markdown_roadmap","sources":["source"],"output":null,"generated":true,"generator":"studio","exposure":"internal","description":"Roadmap"},{"id":"gantt","type":"gantt","sources":["source"],"output":null,"generated":true,"generator":"studio","exposure":"internal","description":"Gantt"}],"variable_registry":[],"collection_registry":[{"id":"phases","source":"source","path":"$.data.phases[*]","item_type":"object","primary_key":"id","unique_by":["id"],"description":"Phases"},{"id":"registry","source":"source","path":"$.data_model.data_registry[*]","item_type":"object","primary_key":"id","unique_by":["id"],"description":"Data registry"}],"join_registry":[],"data_dictionary":{"project_id":{"type":"string","source":"declared","description":"Identifiant stable du projet.","nullable":false,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null},"project_name":{"type":"string","source":"declared","description":"Nom humain du projet.","nullable":false,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null},"status":{"type":"enum","source":"declared","description":"État courant.","nullable":false,"unit":null,"allowed_values":["active","paused","blocked","released","inactive","done","in_progress","not_started","waiting_human","deferred"],"range":null,"item_type":null,"reference_target":null,"calculation":null},"progress":{"type":"number","source":"declared","description":"Progression de maturité.","nullable":true,"unit":"percent","allowed_values":null,"range":{"min":0,"max":100},"item_type":null,"reference_target":null,"calculation":null},"blocking":{"type":"boolean","source":"declared","description":"Élément bloquant.","nullable":false,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null},"path":{"type":"string","source":"declared","description":"Chemin ou URL de la ressource.","nullable":true,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null}},"extensions":{"agent_registry":[{"id":"HUMAN-USER","label":"Humain","type":"human"},{"id":"CHATGPT","label":"ChatGPT","type":"ai"},{"id":"AGENT-A","label":"Agent A","type":"ai"},{"id":"AGENT-B","label":"Agent B","type":"ai"}]}}}},"project-archived.json":{"metadata":{"schema":"nlab.project-master","schema_version":"1.0-candidate","project_id":"DEMO-ARCHIVE","project_name":"Projet archivé — cycle complet","status":"inactive","priority":1,"current_phase":"PROJECT_INACTIVE","source_repository":"demo/local","roadmap_human_path":null,"rex_machine_path":null,"human_check_path":null,"extensions":{"archive_reason":"Fin de vie produit","archived_at":"2026-03-31T18:00:00+02:00"}},"data":{"goal":"Projet simulé ayant été livré, maintenu, arrêté puis archivé explicitement.","summary":"Projet simulé ayant été livré, maintenu, arrêté puis archivé explicitement.","next_target":"Poursuivre selon roadmap simulée.","blocking_reasons":[],"phases":[{"id":"IDEA_CREATION","label":"Idée / création","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Idée / création terminé.","blocking_criterion_met":true,"children":[{"id":"ARC-1-01","type":"task","title":"Idée / création — clôture","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2025-09-01","end_date":"2025-09-05"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":30},{"agent_id":"CHATGPT","contribution_percent":70}],"last_activity_at":"2025-09-05T17:30:00+02:00"}}],"extensions":{}},{"id":"FRAMING","label":"Cadrage","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Cadrage terminé.","blocking_criterion_met":true,"children":[{"id":"ARC-2-01","type":"task","title":"Cadrage — clôture","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2025-09-01","end_date":"2025-09-05"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":30},{"agent_id":"CHATGPT","contribution_percent":70}],"last_activity_at":"2025-09-05T17:30:00+02:00"}}],"extensions":{}},{"id":"POC_PROTOTYPE","label":"POC / prototype","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"POC / prototype terminé.","blocking_criterion_met":true,"children":[{"id":"ARC-3-01","type":"task","title":"POC / prototype — clôture","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2025-09-01","end_date":"2025-09-05"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":30},{"agent_id":"CHATGPT","contribution_percent":70}],"last_activity_at":"2025-09-05T17:30:00+02:00"}}],"extensions":{}},{"id":"DESIGN","label":"Conception / architecture","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Conception / architecture terminé.","blocking_criterion_met":true,"children":[{"id":"ARC-4-01","type":"task","title":"Conception / architecture — clôture","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2025-09-01","end_date":"2025-09-05"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":30},{"agent_id":"CHATGPT","contribution_percent":70}],"last_activity_at":"2025-09-05T17:30:00+02:00"}}],"extensions":{}},{"id":"DEVELOPMENT","label":"Développement","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Développement terminé.","blocking_criterion_met":true,"children":[{"id":"ARC-5-01","type":"task","title":"Développement — clôture","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2025-09-01","end_date":"2025-09-05"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":30},{"agent_id":"CHATGPT","contribution_percent":70}],"last_activity_at":"2025-09-05T17:30:00+02:00"}}],"extensions":{}},{"id":"VALIDATION","label":"Validation","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Validation terminé.","blocking_criterion_met":true,"children":[{"id":"ARC-6-01","type":"task","title":"Validation — clôture","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2025-09-01","end_date":"2025-09-05"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":30},{"agent_id":"CHATGPT","contribution_percent":70}],"last_activity_at":"2025-09-05T17:30:00+02:00"}}],"extensions":{}},{"id":"RELEASE","label":"Livraison / release","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Livraison / release terminé.","blocking_criterion_met":true,"children":[{"id":"ARC-7-01","type":"task","title":"Livraison / release — clôture","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2025-09-01","end_date":"2025-09-05"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":30},{"agent_id":"CHATGPT","contribution_percent":70}],"last_activity_at":"2025-09-05T17:30:00+02:00"}}],"extensions":{}},{"id":"CAPITALIZATION","label":"Capitalisation / REX","status":"done","progress":100,"progress_scope":"capitalization","blocking_criterion":"Capitalisation / REX terminé.","blocking_criterion_met":true,"children":[{"id":"ARC-8-01","type":"task","title":"Capitalisation / REX — clôture","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2025-09-01","end_date":"2025-09-05"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":30},{"agent_id":"CHATGPT","contribution_percent":70}],"last_activity_at":"2025-09-05T17:30:00+02:00"}}],"extensions":{}},{"id":"MAINTENANCE_EVOLUTION","label":"Maintenance / évolution","status":"done","progress":100,"progress_scope":"lifecycle","blocking_criterion":"Maintenance / évolution terminé.","blocking_criterion_met":true,"children":[{"id":"ARC-9-01","type":"task","title":"Maintenance / évolution — clôture","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2025-09-01","end_date":"2025-09-05"},"assignments":[{"agent_id":"HUMAN-USER","contribution_percent":30},{"agent_id":"CHATGPT","contribution_percent":70}],"last_activity_at":"2025-09-05T17:30:00+02:00"}}],"extensions":{}},{"id":"PROJECT_INACTIVE","label":"Projet inactif","status":"done","progress":100,"progress_scope":"lifecycle","blocking_criterion":"Projet inactif terminé.","blocking_criterion_met":true,"children":[],"extensions":{}}],"extensions":{}},"data_model":{"data_registry":[{"id":"source","kind":"project_master","format":"json","path":"./demo-archive.json","source":"self","canonical":true,"derived":false,"required":true,"confidentiality":"internal","description":"Source projet."},{"id":"site","kind":"external_reference","format":"url","path":"https://example.org/projects/demo-archive","source":"source","canonical":false,"derived":false,"required":false,"confidentiality":"public","description":"URL publique cliquable."},{"id":"asset","kind":"asset","format":"text","path":"hero-demo-archive.webp","source":"source","canonical":false,"derived":false,"required":false,"confidentiality":"internal","description":"Nom de fichier image."}],"relation_registry":[],"view_registry":[{"id":"roadmap","type":"markdown_roadmap","sources":["source"],"output":null,"generated":true,"generator":"studio","exposure":"internal","description":"Roadmap"},{"id":"gantt","type":"gantt","sources":["source"],"output":null,"generated":true,"generator":"studio","exposure":"internal","description":"Gantt"}],"variable_registry":[],"collection_registry":[{"id":"phases","source":"source","path":"$.data.phases[*]","item_type":"object","primary_key":"id","unique_by":["id"],"description":"Phases"},{"id":"registry","source":"source","path":"$.data_model.data_registry[*]","item_type":"object","primary_key":"id","unique_by":["id"],"description":"Data registry"}],"join_registry":[],"data_dictionary":{"project_id":{"type":"string","source":"declared","description":"Identifiant stable du projet.","nullable":false,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null},"project_name":{"type":"string","source":"declared","description":"Nom humain du projet.","nullable":false,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null},"status":{"type":"enum","source":"declared","description":"État courant.","nullable":false,"unit":null,"allowed_values":["active","paused","blocked","released","inactive","done","in_progress","not_started","waiting_human","deferred"],"range":null,"item_type":null,"reference_target":null,"calculation":null},"progress":{"type":"number","source":"declared","description":"Progression de maturité.","nullable":true,"unit":"percent","allowed_values":null,"range":{"min":0,"max":100},"item_type":null,"reference_target":null,"calculation":null},"blocking":{"type":"boolean","source":"declared","description":"Élément bloquant.","nullable":false,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null},"path":{"type":"string","source":"declared","description":"Chemin ou URL de la ressource.","nullable":true,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null}},"extensions":{"agent_registry":[{"id":"HUMAN-USER","label":"Humain","type":"human"},{"id":"CHATGPT","label":"ChatGPT","type":"ai"},{"id":"AGENT-A","label":"Agent A","type":"ai"},{"id":"AGENT-B","label":"Agent B","type":"ai"}]}}}},"project-blocked-restart.json":{"metadata":{"schema":"nlab.project-master","schema_version":"1.0-candidate","project_id":"DEMO-BLOCKED","project_name":"Projet bloqué puis repris","status":"blocked","priority":1,"current_phase":"DEVELOPMENT","source_repository":"demo/local","roadmap_human_path":null,"rex_machine_path":null,"human_check_path":null,"extensions":{"blocked_since":"2026-05-24","restart_at":"2026-07-01"}},"data":{"goal":"Projet simulant blocage externe, interruption, reprise et replanification.","summary":"Projet simulant blocage externe, interruption, reprise et replanification.","next_target":"Poursuivre selon roadmap simulée.","blocking_reasons":["API fournisseur indisponible pendant plusieurs semaines."],"phases":[{"id":"IDEA_CREATION","label":"Idée / création","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Idée / création terminé.","blocking_criterion_met":true,"children":[],"extensions":{}},{"id":"FRAMING","label":"Cadrage","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Cadrage terminé.","blocking_criterion_met":true,"children":[],"extensions":{}},{"id":"POC_PROTOTYPE","label":"POC / prototype","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"POC / prototype terminé.","blocking_criterion_met":true,"children":[],"extensions":{}},{"id":"DESIGN","label":"Conception / architecture","status":"done","progress":100,"progress_scope":"delivery","blocking_criterion":"Conception / architecture terminé.","blocking_criterion_met":true,"children":[],"extensions":{}},{"id":"DEVELOPMENT","label":"Développement","status":"blocked","progress":48,"progress_scope":"delivery","blocking_criterion":"Développement terminé.","blocking_criterion_met":false,"children":[{"id":"BLK-DEV-01","type":"task","title":"Développement API","description":null,"status":"done","progress":100,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-05-01","end_date":"2026-05-20"},"assignments":[{"agent_id":"AGENT-A","contribution_percent":70},{"agent_id":"CHATGPT","contribution_percent":30}],"last_activity_at":"2026-05-20T17:30:00+02:00"}},{"id":"BLK-DEV-02","type":"task","title":"Intégration fournisseur externe","description":"Dépendance externe indisponible.","status":"blocked","progress":20,"weight":1,"blocking":true,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-05-21","end_date":"2026-06-15"},"assignments":[{"agent_id":"AGENT-B","contribution_percent":60},{"agent_id":"HUMAN-USER","contribution_percent":40}],"last_activity_at":"2026-06-15T17:30:00+02:00"}},{"id":"BLK-DEV-03","type":"task","title":"Reprise après déblocage","description":null,"status":"in_progress","progress":25,"weight":1,"blocking":false,"human_gate":null,"children":[],"extensions":{"schedule":{"start_date":"2026-07-01","end_date":"2026-07-18"},"assignments":[{"agent_id":"CHATGPT","contribution_percent":60},{"agent_id":"AGENT-B","contribution_percent":40}],"last_activity_at":"2026-07-18T17:30:00+02:00"}}],"extensions":{}},{"id":"VALIDATION","label":"Validation","status":"not_started","progress":0,"progress_scope":"delivery","blocking_criterion":"Validation terminé.","blocking_criterion_met":false,"children":[],"extensions":{}},{"id":"RELEASE","label":"Livraison / release","status":"not_started","progress":0,"progress_scope":"delivery","blocking_criterion":"Livraison / release terminé.","blocking_criterion_met":false,"children":[],"extensions":{}},{"id":"CAPITALIZATION","label":"Capitalisation / REX","status":"not_started","progress":0,"progress_scope":"capitalization","blocking_criterion":"Capitalisation / REX terminé.","blocking_criterion_met":false,"children":[],"extensions":{}},{"id":"MAINTENANCE_EVOLUTION","label":"Maintenance / évolution","status":"not_started","progress":0,"progress_scope":"lifecycle","blocking_criterion":"Maintenance / évolution terminé.","blocking_criterion_met":false,"children":[],"extensions":{}},{"id":"PROJECT_INACTIVE","label":"Projet inactif","status":"not_started","progress":0,"progress_scope":"lifecycle","blocking_criterion":"Projet inactif terminé.","blocking_criterion_met":false,"children":[],"extensions":{}}],"extensions":{}},"data_model":{"data_registry":[{"id":"source","kind":"project_master","format":"json","path":"./demo-blocked.json","source":"self","canonical":true,"derived":false,"required":true,"confidentiality":"internal","description":"Source projet."},{"id":"site","kind":"external_reference","format":"url","path":"https://example.org/projects/demo-blocked","source":"source","canonical":false,"derived":false,"required":false,"confidentiality":"public","description":"URL publique cliquable."},{"id":"asset","kind":"asset","format":"text","path":"hero-demo-blocked.webp","source":"source","canonical":false,"derived":false,"required":false,"confidentiality":"internal","description":"Nom de fichier image."}],"relation_registry":[],"view_registry":[{"id":"roadmap","type":"markdown_roadmap","sources":["source"],"output":null,"generated":true,"generator":"studio","exposure":"internal","description":"Roadmap"},{"id":"gantt","type":"gantt","sources":["source"],"output":null,"generated":true,"generator":"studio","exposure":"internal","description":"Gantt"}],"variable_registry":[],"collection_registry":[{"id":"phases","source":"source","path":"$.data.phases[*]","item_type":"object","primary_key":"id","unique_by":["id"],"description":"Phases"},{"id":"registry","source":"source","path":"$.data_model.data_registry[*]","item_type":"object","primary_key":"id","unique_by":["id"],"description":"Data registry"}],"join_registry":[],"data_dictionary":{"project_id":{"type":"string","source":"declared","description":"Identifiant stable du projet.","nullable":false,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null},"project_name":{"type":"string","source":"declared","description":"Nom humain du projet.","nullable":false,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null},"status":{"type":"enum","source":"declared","description":"État courant.","nullable":false,"unit":null,"allowed_values":["active","paused","blocked","released","inactive","done","in_progress","not_started","waiting_human","deferred"],"range":null,"item_type":null,"reference_target":null,"calculation":null},"progress":{"type":"number","source":"declared","description":"Progression de maturité.","nullable":true,"unit":"percent","allowed_values":null,"range":{"min":0,"max":100},"item_type":null,"reference_target":null,"calculation":null},"blocking":{"type":"boolean","source":"declared","description":"Élément bloquant.","nullable":false,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null},"path":{"type":"string","source":"declared","description":"Chemin ou URL de la ressource.","nullable":true,"unit":null,"allowed_values":null,"range":null,"item_type":null,"reference_target":null,"calculation":null}},"extensions":{"agent_registry":[{"id":"HUMAN-USER","label":"Humain","type":"human"},{"id":"CHATGPT","label":"ChatGPT","type":"ai"},{"id":"AGENT-A","label":"Agent A","type":"ai"},{"id":"AGENT-B","label":"Agent B","type":"ai"}]}}}},"join-customers.json":{"dataset_id":"JOIN-CUSTOMERS","description":"Clients simples pour tests de jointures.","customers":[{"customer_id":"C001","name":"Alice Martin","city":"Paris","active":true,"website":"https://alice.example.com","note":"URL cliquable"},{"customer_id":"C002","name":"Bruno Leroy","city":"Lyon","active":true,"website":"example.invalid/not-clickable","note":"Texte ressemblant à une URL mais sans protocole"},{"customer_id":"C003","name":"Chloé Bernard","city":"Nantes","active":false,"website":null,"note":"Client sans commande"}]},"join-orders.json":{"dataset_id":"JOIN-ORDERS","description":"Commandes pour one-to-many / left / inner.","orders":[{"order_id":"O1001","customer_id":"C001","amount":120.5,"status":"paid","asset_id":"A01"},{"order_id":"O1002","customer_id":"C001","amount":42.0,"status":"pending","asset_id":"A02"},{"order_id":"O1003","customer_id":"C002","amount":310.0,"status":"paid","asset_id":"A03"},{"order_id":"O1004","customer_id":"C999","amount":12.0,"status":"orphan","asset_id":"A99"}]},"join-assets.json":{"dataset_id":"JOIN-ASSETS","description":"Assets, URLs, images, vidéos et structures imbriquées.","assets":[{"asset_id":"A01","type":"image","filename":"pear.webp","url":"https://cdn.example.org/img/pear.webp","meta":{"dimensions":{"width":1200,"height":800},"tags":["fruit","green"],"rights":{"owner":{"company":{"name":"Demo Media","country":"FR"}}}}},{"asset_id":"A02","type":"video","filename":"demo-product.mp4","url":"https://cdn.example.org/video/demo-product.mp4","meta":{"duration_seconds":82,"chapters":[{"id":1,"title":"Intro"},{"id":2,"title":"Usage"}]}},{"asset_id":"A03","type":"photo","filename":"portrait-003.jpg","url":"files/portrait-003.jpg","meta":{"nested":{"level2":{"level3":{"level4":{"level5":{"level6":{"value":"deep-test"}}}}}}}},{"asset_id":"A04","type":"document","filename":"manual.pdf","url":"https://docs.example.org/manual.pdf","meta":{"language":"fr"}}]},"join-left-simple.json":{"left":[{"id":1,"label":"A"},{"id":2,"label":"B"},{"id":3,"label":"C"}]},"join-right-simple.json":{"right":[{"id":1,"value":"Alpha"},{"id":1,"value":"Alpha-2"},{"id":3,"value":"Gamma"},{"id":4,"value":"Delta"}]}};
+let docs = {};
+let currentId = null;
+let selectedPath = '$';
+let contextMode = 'edit';
+let hierarchyDepth = 8;
+let hierarchyExpandAll = false;
+let hierarchyCollapseAll = false;
+let ganttDepth = 5;
+let openPaths = new Set(['$']);
+let splitPct = 33, treeVisible = true, panelVisible = true;
+let tableSort = {col:null,dir:1};
+let theme = {mode:'light', syntax:true, lines:true};
+let highlightedLines=new Set(),ganttZoom=100,ganttFilters={start:'',end:'',rows:''};
+let agentColors={'HUMAN-USER':'#fde68a','CHATGPT':'#bfdbfe','AGENT-A':'#bbf7d0','AGENT-B':'#ddd6fe','AGENT-C':'#fecdd3'};
+let phaseColors={'IDEA_CREATION':'#dbeafe','FRAMING':'#bfdbfe','POC_PROTOTYPE':'#bae6fd','DESIGN':'#c4b5fd','DEVELOPMENT':'#bbf7d0','VALIDATION':'#fde68a','RELEASE':'#fdba74','CAPITALIZATION':'#fbcfe8','MAINTENANCE_EVOLUTION':'#cbd5e1','PROJECT_INACTIVE':'#a1a1aa'};
+
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone = v=>structuredClone(v);
+function idFor(name){return name+'-'+Math.random().toString(36).slice(2,8)}
+function cur(){return docs[currentId]?.working}
+function baseline(){return docs[currentId]?.baseline}
+function isPM(){return cur()?.metadata?.schema==='nlab.project-master'}
+function setStatus(t){$('#status').textContent=t}
+function serialize(v){return JSON.stringify(v,null,2)}
+function addDoc(name,obj){
+  const id=idFor(name); docs[id]={id,name,baseline:clone(obj),working:clone(obj),openedAt:new Date().toISOString()}; currentId=id; selectedPath='$'; refreshDocSelect(); renderAll(); setStatus(name+' chargé');
+}
+function refreshDocSelect(){
+  const s=$('#docSelect');s.innerHTML=Object.values(docs).map(d=>'<option value="'+d.id+'" '+(d.id===currentId?'selected':'')+'>'+esc(d.name)+'</option>').join('');
+}
+$('#docSelect').onchange=e=>{currentId=e.target.value;selectedPath='$';renderAll();setStatus('Document actif : '+docs[currentId].name)}
+$('#closeDoc').onclick=()=>{if(!currentId)return;delete docs[currentId];currentId=Object.keys(docs)[0]||null;refreshDocSelect();renderAll()}
+$('#fileInput').onchange=async e=>{for(const f of e.target.files){try{addDoc(f.name,JSON.parse(await f.text()))}catch(err){setStatus(f.name+': JSON invalide')}}e.target.value=''}
+$('#demoSelect').onchange=e=>{if(!e.target.value)return;addDoc(e.target.value,DEMOS[e.target.value]);e.target.value=''}
+Object.keys(DEMOS).forEach(k=>$('#demoSelect').insertAdjacentHTML('beforeend','<option value="'+esc(k)+'">'+esc(k)+'</option>'));
+
+$('#exportBtn').onclick=()=>{if(!currentId)return;const d=docs[currentId];const b=new Blob([serialize(d.working)+'\n'],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=d.name.replace(/\.json$/,'')+'-edited.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)};
+$('#saveBtn').onclick=async()=>{
+ if(!currentId)return;const d=docs[currentId],content=serialize(d.working)+'\n';
+ try{
+  if('showSaveFilePicker' in window){
+   d.fileHandle=d.fileHandle||await window.showSaveFilePicker({suggestedName:d.name,types:[{description:'JSON',accept:{'application/json':['.json']}}]});
+   const w=await d.fileHandle.createWritable();await w.write(content);await w.close();setStatus('JSON enregistré');
+  }else{
+   const b=new Blob([content],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=d.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);setStatus('JSON téléchargé (fallback navigateur)');
+  }
+ }catch(e){if(e.name!=='AbortError')setStatus('Enregistrement impossible : '+e.message)}
+};
+
+/* theme */
+$('#themeBtn').onclick=()=>$('#themeBtn').parentElement.classList.toggle('open');
+$('#displayBtn').onclick=()=>{$('#displayBtn').parentElement.classList.toggle('open');renderDisplaySettings()};
+document.addEventListener('click',e=>{document.querySelectorAll('.topmenu.open').forEach(m=>{if(!m.contains(e.target))m.classList.remove('open')})});
+function renderDisplaySettings(){
+ const h=$('#displaySettings');let s='<b>Agents</b><div class="settingsGrid">';
+ Object.entries(agentColors).forEach(([id,c])=>s+='<span>'+esc(id)+'</span><input type="color" data-ac="'+esc(id)+'" value="'+c+'"><input type="text" data-ah="'+esc(id)+'" value="'+c+'">');
+ s+='</div><hr><b>Phases</b><div class="settingsGrid">';
+ Object.entries(phaseColors).forEach(([id,c])=>s+='<span>'+esc(id)+'</span><input type="color" data-pc="'+esc(id)+'" value="'+c+'"><input type="text" data-ph="'+esc(id)+'" value="'+c+'">');
+ h.innerHTML=s+'</div>';
+ h.querySelectorAll('[data-ac]').forEach(i=>i.oninput=()=>{agentColors[i.dataset.ac]=i.value;renderAll();renderDisplaySettings()});
+ h.querySelectorAll('[data-ah]').forEach(i=>i.onchange=()=>{if(/^#[0-9a-f]{6}$/i.test(i.value)){agentColors[i.dataset.ah]=i.value;renderAll();renderDisplaySettings()}});
+ h.querySelectorAll('[data-pc]').forEach(i=>i.oninput=()=>{phaseColors[i.dataset.pc]=i.value;renderAll();renderDisplaySettings()});
+ h.querySelectorAll('[data-ph]').forEach(i=>i.onchange=()=>{if(/^#[0-9a-f]{6}$/i.test(i.value)){phaseColors[i.dataset.ph]=i.value;renderAll();renderDisplaySettings()}});
+}
+
+$('#themeMode').onchange=e=>{theme.mode=e.target.value;applyTheme()}
+$('#bgColor').oninput=e=>{document.documentElement.style.setProperty('--bg',e.target.value);theme.mode='custom';$('#themeMode').value='custom'}
+$('#syntaxToggle').onchange=e=>{theme.syntax=e.target.checked;renderRaw()}
+$('#lineToggle').onchange=e=>{theme.lines=e.target.checked;renderRaw()}
+function applyTheme(){document.body.classList.toggle('dark',theme.mode==='dark');if(theme.mode==='light')document.documentElement.style.setProperty('--bg','#f5f7fa');if(theme.mode==='dark')document.documentElement.style.setProperty('--bg','#0b1220')}
+
+/* tabs */
+$('#tabs').onclick=e=>{const b=e.target.closest('button[data-view]');if(!b)return;document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$('#'+b.dataset.view).classList.add('active');renderAll()}
+
+/* path */
+function pathTokens(path){if(path==='$')return[];const out=[];for(const p of path.replace(/^\$\.?/,'').split('.').filter(Boolean)){let m=p.match(/^([^\[]+)(?:\[(\d+)\])?$/);if(m){out.push(m[1]);if(m[2]!=null)out.push(Number(m[2]))}else out.push(p)}return out}
+function getAt(path){let x=cur();for(const t of pathTokens(path))x=x?.[t];return x}
+function setAt(path,v){const ts=pathTokens(path);if(!ts.length){docs[currentId].working=v;return}let x=cur();for(let i=0;i<ts.length-1;i++)x=x[ts[i]];x[ts.at(-1)]=v}
+function parentInfo(path){const ts=pathTokens(path);if(!ts.length)return null;const key=ts.pop();let x=cur();for(const t of ts)x=x[t];return {parent:x,key,tokens:ts}}
+function keyName(path){const p=path.split('.').pop()||'';return p.replace(/\[\d+\]$/,'')}
+function dict(path){return cur()?.data_model?.data_dictionary?.[keyName(path)]||null}
+
+/* raw */
+let rawMode='simple';
+$('#rawSimpleBtn').onclick=()=>{rawMode='simple';renderRaw()}
+$('#rawDiffBtn').onclick=()=>{rawMode='diff';renderRaw()}
+$('#formatBtn').onclick=()=>{try{const ta=rawMode==='diff'?$('#workText'):$('#rawText');ta.value=serialize(JSON.parse(ta.value));syncGutters()}catch(e){setStatus(e.message)}}
+$('#applyBtn').onclick=()=>{try{const ta=rawMode==='diff'?$('#workText'):$('#rawText');docs[currentId].working=JSON.parse(ta.value);renderAll();setStatus('Modifications appliquées')}catch(e){setStatus('JSON invalide : '+e.message)}}
+$('#newBaseline').onclick=()=>{docs[currentId].baseline=clone(cur());renderRaw();setStatus('Nouvelle baseline définie')}
+$('#rawText').oninput=syncGutters;$('#workText').oninput=()=>{autoSizeWorkEditor();syncGutters();renderActiveHighlight();renderDiff()}
+function linesText(t){return t.split('\n').map((_,i)=>i+1).join('\n')}
+function syncGutters(){
+ const t1=$('#rawText').value,tw=$('#workText').value,tb=serialize(baseline()||{});
+ $('#gutter1').innerHTML=theme.lines?highlightedGutter(t1):'';
+ $('#gutterWork').innerHTML=theme.lines?highlightedGutter(tw):'';
+ $('#gutterBase').innerHTML=theme.lines?highlightedGutter(tb):'';
+ document.querySelectorAll('.gutter').forEach(g=>g.style.display=theme.lines?'block':'none');
+}
+function renderActiveHighlight(){
+ const el=$('#workHighlight');if(el)el.innerHTML=highlightCodeLines($('#workText').value||'');
+ const sm=$('#simpleHighlight');if(sm)sm.innerHTML=highlightCodeLines($('#rawText').value||'');
+}
+function autoSizeWorkEditor(){
+ const ta=$('#workText');if(!ta)return;ta.style.height='auto';ta.style.height=Math.max(560,ta.scrollHeight)+'px';
+ const h=$('#workHighlight');if(h)h.style.minHeight=ta.style.height;
+ const st=$('#rawText'),sh=$('#simpleHighlight');if(st&&sh)sh.style.minHeight=Math.max(420,st.scrollHeight)+'px';
+}
+function renderRaw(){
+ if(!currentId)return;
+ $('#rawSimple').classList.toggle('active',rawMode==='simple');$('#rawDiff').classList.toggle('active',rawMode==='diff');
+ const w=serialize(cur()),b=serialize(baseline());
+ if(document.activeElement!==$('#rawText'))$('#rawText').value=w;
+ if(document.activeElement!==$('#workText'))$('#workText').value=w;
+ $('#basePre').innerHTML=highlightCodeLines(b);renderActiveHighlight();autoSizeWorkEditor();syncGutters();renderDiff();
+}
+function diffLines(a,b){
+ const A=a.split('\n'),B=b.split('\n'),out=[];let i=0,j=0;const LOOK=12;
+ while(i<A.length||j<B.length){
+  if(i<A.length&&j<B.length&&A[i]===B[j]){out.push({t:'same',a:i+1,b:j+1,s:A[i]});i++;j++;continue}
+  let ai=-1,bj=-1;
+  for(let k=1;k<=LOOK&&i+k<A.length;k++){if(A[i+k]===B[j]){ai=k;break}}
+  for(let k=1;k<=LOOK&&j+k<B.length;k++){if(B[j+k]===A[i]){bj=k;break}}
+  if(ai>0&&(bj<0||ai<=bj)){for(let k=0;k<ai;k++)out.push({t:'del',a:i+1,b:'',s:A[i++]});continue}
+  if(bj>0){for(let k=0;k<bj;k++)out.push({t:'add',a:'',b:j+1,s:B[j++]});continue}
+  if(i<A.length&&j<B.length){out.push({t:'mod',a:i+1,b:j+1,s:'− '+A[i]+'\n+ '+B[j]});i++;j++;continue}
+  if(i<A.length)out.push({t:'del',a:i+1,b:'',s:A[i++]});else out.push({t:'add',a:'',b:j+1,s:B[j++]});
+ }
+ return out;
+}
+function renderDiff(){
+ if(!currentId)return;let arr=diffLines(serialize(baseline()),$('#workText').value||serialize(cur()));
+ $('#diffBody').innerHTML=arr.filter(x=>x.t!=='same').map(x=>'<div class="diffline '+x.t+'"><span>'+x.a+'</span><span>'+x.b+'</span><span>'+esc(x.s)+'</span></div>').join('')||'<div style="padding:8px">Aucune différence.</div>';
+}
+$('#diffToggle').onclick=()=>$('#diffBody').classList.toggle('collapsed')
+$('#diffColors').onclick=()=>{const c=prompt('Couleurs ajout,suppression,modification (hex séparés par virgules)',getComputedStyle(document.documentElement).getPropertyValue('--add').trim()+','+getComputedStyle(document.documentElement).getPropertyValue('--del').trim()+','+getComputedStyle(document.documentElement).getPropertyValue('--mod').trim());if(!c)return;let [a,d,m]=c.split(',');if(a)document.documentElement.style.setProperty('--add',a.trim());if(d)document.documentElement.style.setProperty('--del',d.trim());if(m)document.documentElement.style.setProperty('--mod',m.trim())}
+
+/* hierarchy */
+$('#depthRange').oninput=e=>{hierarchyDepth=Number(e.target.value);$('#depthLabel').textContent=hierarchyDepth;renderTree()}
+$('#expandAll').onclick=()=>{openPaths=new Set();collectObjectPaths(cur(),'$',0,openPaths);renderTree()}
+$('#collapseAll').onclick=()=>{openPaths=new Set(['$']);renderTree()}
+function updateSplitLayout(){const s=$('#hierSplit');if(!treeVisible)s.style.gridTemplateColumns='0 0 1fr';else if(!panelVisible)s.style.gridTemplateColumns='1fr 0 0';else s.style.gridTemplateColumns=splitPct+'% 6px 1fr'}
+$('#toggleLeft').onclick=()=>{treeVisible=!treeVisible;updateSplitLayout()}
+$('#toggleRight').onclick=()=>{panelVisible=!panelVisible;updateSplitLayout()}
+let dragging=false;$('#splitbar').onpointerdown=e=>{if(!treeVisible||!panelVisible)return;dragging=true;e.preventDefault()};window.addEventListener('pointerup',()=>dragging=false);window.addEventListener('pointermove',e=>{if(!dragging)return;const r=$('#hierSplit').getBoundingClientRect();splitPct=Math.max(18,Math.min(75,(e.clientX-r.left)/r.width*100));updateSplitLayout()})
+function collectObjectPaths(v,path,level,set){if(!v||typeof v!=='object'||level>=hierarchyDepth)return;set.add(path);Object.entries(v).forEach(([k,val])=>{let cp=Array.isArray(v)?path+'['+k+']':(path==='$'?'$.'+k:path+'.'+k);collectObjectPaths(val,cp,level+1,set)})}
+document.querySelector('.contexttabs').onclick=e=>{const b=e.target.closest('button[data-cmode]');if(!b)return;contextMode=b.dataset.cmode;document.querySelectorAll('.contexttabs button').forEach(x=>x.classList.toggle('active',x===b));renderContext()}
+function treeNode(v,key,path,level){
+ const li=document.createElement('li'),line=document.createElement('div');line.className='node'+(path===selectedPath?' sel':'');
+ const isObj=v&&typeof v==='object', isIndex=/^\d+$/.test(String(key)), toggle=document.createElement('button');
+ toggle.className='foldbtn';toggle.textContent=isObj?(openPaths.has(path)?'▾':'▸'):'·';toggle.disabled=!isObj;
+ toggle.onclick=e=>{e.stopPropagation();if(!isObj)return;if(openPaths.has(path))openPaths.delete(path);else openPaths.add(path);renderTree()};
+ const label=document.createElement('span');label.className='label';
+ const actual=Array.isArray(v)?'array['+v.length+']':v===null?'null':typeof v;
+ const declared=dict(path)?.type;
+ label.innerHTML='<span class="'+(isIndex?'indexkey':'objkey')+'">'+esc(key)+'</span> <span class="type">'+esc(actual)+(declared&&declared!==actual?' · dict:'+esc(declared):'')+'</span>';
+ label.onclick=()=>{selectedPath=path;if(isObj)openPaths.add(path);renderTree();renderContext();renderForm()};
+ const info=document.createElement('button');info.className='mini';info.textContent='ⓘ';info.onclick=e=>{e.stopPropagation();selectedPath=path;contextMode='info';document.querySelectorAll('.contexttabs button').forEach(x=>x.classList.toggle('active',x.dataset.cmode==='info'));renderTree();renderContext()};
+ line.append(toggle,label,info);if(v===null||typeof v!=='object'){let s=document.createElement('span');s.className='scalar';s.textContent=' '+JSON.stringify(v);line.appendChild(s)}li.appendChild(line);
+ if(isObj&&level<hierarchyDepth){
+  const ul=document.createElement('ul');if(!openPaths.has(path))ul.classList.add('hidden');
+  Object.entries(v).forEach(([k,val])=>{let cp=Array.isArray(v)?path+'['+k+']':(path==='$'?'$.'+k:path+'.'+k);ul.appendChild(treeNode(val,k,cp,level+1))});li.appendChild(ul);
+ }
+ return li;
+}
+function renderTree(){if(!currentId)return;const out=$('#treeOut');out.innerHTML='';let ul=document.createElement('ul');ul.appendChild(treeNode(cur(),'root','$',0));out.appendChild(ul)}
+function renderContext(){
+ if(!currentId)return;const out=$('#contextOut'),v=getAt(selectedPath),d=dict(selectedPath);
+ if(contextMode==='info'){const actual=Array.isArray(v)?'array':v===null?'null':typeof v;out.innerHTML='<h3>Documentation contextuelle</h3><div class="kv"><b>Chemin root</b><span>'+esc(selectedPath)+'</span><b>Clé</b><span>'+esc(keyName(selectedPath))+'</span><b>Type détecté</b><span>'+esc(actual)+'</span><b>Type dictionnaire</b><span>'+esc(d?.type||'—')+'</span><b>Type item</b><span>'+esc(d?.item_type||'—')+'</span><b>Source</b><span>'+esc(d?.source||'—')+'</span><b>Unité</b><span>'+esc(d?.unit||'—')+'</span><b>Référence</b><span>'+esc(d?.reference_target||'—')+'</span><b>Valeurs</b><span>'+esc(d?.allowed_values?d.allowed_values.join(', '):'—')+'</span><b>Plage</b><span>'+esc(d?.range?JSON.stringify(d.range):'—')+'</span></div><p>'+esc(d?.description||'Aucune entrée explicite dans le dictionnaire pour cette clé.')+'</p>'}
+ else{out.innerHTML='<h3>Édition du nœud</h3><p><code>'+esc(selectedPath)+'</code></p><div id="ctxForm"></div><div class="nodeops"><button data-op="addSibling">+ Frère</button><button data-op="addChild">+ Enfant</button><button data-op="up">↑ Monter</button><button data-op="down">↓ Descendre</button><button data-op="indent">→ Indenter</button><button data-op="outdent">← Remonter niveau</button><button data-op="delete">Supprimer</button></div>';renderFormInto($('#ctxForm'),selectedPath,v);out.querySelector('.nodeops').onclick=e=>{const b=e.target.closest('button[data-op]');if(b)nodeOp(b.dataset.op)}}
+}
+function makeInput(v,path,d){
+ let inp;if(d?.allowed_values?.length){inp=document.createElement('select');d.allowed_values.forEach(x=>inp.insertAdjacentHTML('beforeend','<option '+(String(x)===String(v)?'selected':'')+'>'+esc(x)+'</option>'))}
+ else if(typeof v==='boolean'){inp=document.createElement('select');['true','false'].forEach(x=>inp.insertAdjacentHTML('beforeend','<option '+(String(v)===x?'selected':'')+'>'+x+'</option>'))}
+ else if(typeof v==='number'){inp=document.createElement('input');inp.type='number';inp.value=v}
+ else if(typeof v==='string'&&v.length>60){inp=document.createElement('textarea');inp.value=v}
+ else if(v&&typeof v==='object'){inp=document.createElement('textarea');inp.value=serialize(v)}
+ else{inp=document.createElement('input');inp.value=v??''}
+ inp.onchange=()=>{try{let nv;if(inp.tagName==='TEXTAREA'&&v&&typeof v==='object')nv=JSON.parse(inp.value);else if(typeof v==='boolean')nv=inp.value==='true';else if(typeof v==='number')nv=Number(inp.value);else nv=inp.value;setAt(path,nv);renderAll();setStatus('Nœud modifié')}catch(e){setStatus(e.message)}};return inp
+}
+function renderFormInto(out,path,v){out.innerHTML='';let g=document.createElement('div');g.className='formgrid';if(v&&typeof v==='object'&&!Array.isArray(v)){Object.entries(v).forEach(([k,val])=>{let p=path==='$'?'$.'+k:path+'.'+k,d=dict(p),lab=document.createElement('label');lab.innerHTML=esc(k)+'<small>'+esc(d?.description||typeof val)+'</small>';g.append(lab,makeInput(val,p,d))})}else if(Array.isArray(v)){v.forEach((val,i)=>{let p=path+'['+i+']',lab=document.createElement('label');lab.innerHTML='['+i+']<small>'+esc(typeof val)+'</small>';g.append(lab,makeInput(val,p,dict(p)))})}else{let lab=document.createElement('label');lab.textContent=keyName(path);g.append(lab,makeInput(v,path,dict(path)))}out.appendChild(g)}
+function renderForm(){if(!currentId)return;$('#formOut').innerHTML='<p><code>'+esc(selectedPath)+'</code></p><div id="mainForm"></div>';renderFormInto($('#mainForm'),selectedPath,getAt(selectedPath))}
+function objectReorder(obj,key,delta){
+ const entries=Object.entries(obj),i=entries.findIndex(([k])=>k===String(key)),j=i+delta;if(i<0||j<0||j>=entries.length)return false;
+ [entries[i],entries[j]]=[entries[j],entries[i]];Object.keys(obj).forEach(k=>delete obj[k]);entries.forEach(([k,v])=>obj[k]=v);return true;
+}
+function pathFromTokens(ts){let p='$';for(const t of ts)p+=typeof t==='number'?'['+t+']':'.'+t;return p}
+function nodeOp(op){
+ const info=parentInfo(selectedPath);if(!info){setStatus('Opération impossible sur la racine');return}
+ const {parent,key,tokens}=info;let changed=false;
+ if(op==='delete'){if(Array.isArray(parent))parent.splice(Number(key),1);else delete parent[key];selectedPath='$';changed=true}
+ else if(op==='addSibling'){if(Array.isArray(parent)){parent.splice(Number(key)+1,0,{new_field:''});changed=true}else{let nk='new_field_'+Object.keys(parent).length;parent[nk]='';changed=true}}
+ else if(op==='addChild'){const v=getAt(selectedPath);if(Array.isArray(v)){v.push({new_field:''});changed=true}else if(v&&typeof v==='object'){let nk='new_field_'+Object.keys(v).length;v[nk]='';changed=true}else{setStatus('+ Enfant nécessite un objet ou un array');return}}
+ else if(op==='up'||op==='down'){const delta=op==='up'?-1:1;if(Array.isArray(parent)){let i=Number(key),j=i+delta;if(j>=0&&j<parent.length){[parent[i],parent[j]]=[parent[j],parent[i]];changed=true}}else changed=objectReorder(parent,key,delta)}
+ else if(op==='indent'){if(!Array.isArray(parent)){setStatus('Indentation : sélectionne un élément dans un array');return}let i=Number(key);if(i<=0){setStatus('Aucun frère précédent');return}let prev=parent[i-1];if(!prev||typeof prev!=='object'){setStatus('Le frère précédent doit être un objet');return}prev.children=Array.isArray(prev.children)?prev.children:[];prev.children.push(parent.splice(i,1)[0]);selectedPath='$';changed=true}
+ else if(op==='outdent'){
+   if(!Array.isArray(parent)){setStatus('Remonter niveau : sélectionne un élément dans un array enfant');return}
+   const parentArrayTokens=tokens, containerTokens=parentArrayTokens.slice(0,-1), containerKey=parentArrayTokens.at(-1);
+   if(containerKey!=='children'){setStatus('Remonter niveau est disponible pour les arrays children dans ce POC');return}
+   const ownerTokens=containerTokens, ownerPath=pathFromTokens(ownerTokens), ownerInfo=parentInfo(ownerPath);
+   if(!ownerInfo||!Array.isArray(ownerInfo.parent)){setStatus('Aucun niveau parent compatible');return}
+   const item=parent.splice(Number(key),1)[0], ownerIndex=Number(ownerInfo.key);ownerInfo.parent.splice(ownerIndex+1,0,item);selectedPath='$';changed=true;
+ }
+ if(changed){renderAll();setStatus('Structure JSON modifiée')}
+}
+
+/* table */
+$('#tableRefresh').onclick=renderTable;$('#tableOptionsBtn').onclick=()=>$('#tableOpts').classList.toggle('open');$('#stripedToggle').onchange=e=>$('#tableOut').classList.toggle('striped',e.target.checked);$('#filterToggle').onchange=renderTable
+function simplePath(path){if(!path||path==='$')return cur();let current=[cur()];for(const p of path.replace(/^\$\.?/,'').split('.').filter(Boolean)){let star=p.endsWith('[*]'),k=star?p.slice(0,-3):p,n=[];for(const x of current){let v=x?.[k];if(star&&Array.isArray(v))n.push(...v);else if(!star&&v!==undefined)n.push(v)}current=n}return current.length===1?current[0]:current}
+function pathChildren(node){if(Array.isArray(node))return node.length?[{key:'[*]',value:node[0]}]:[];if(node&&typeof node==='object')return Object.entries(node).map(([key,value])=>({key,value}));return[]}
+function renderPathPicker(){
+ const host=$('#pathPicker');host.innerHTML='';let node=cur(),path='$',level=0;
+ function addLevel(){
+   const choices=pathChildren(node).filter(x=>x.value&&typeof x.value==='object');if(!choices.length)return;
+   const sel=document.createElement('select');sel.innerHTML='<option value="">Niveau '+(level+1)+'…</option>'+choices.map((x,i)=>'<option value="'+i+'">'+esc(x.key)+'</option>').join('');
+   sel.onchange=()=>{while(sel.nextSibling)sel.nextSibling.remove();if(sel.value==='')return;const c=choices[Number(sel.value)];if(c.key==='[*]'){path+='[*]';node=Array.isArray(node)?node[0]:node}else{path+=(path==='$'?'$.':'.')+c.key;node=c.value}$('#tablePath').value=path;level++;addLevel();renderTable()};
+   host.appendChild(sel);
+ }
+ addLevel();
+}
+function renderTable(){
+ if(!currentId)return;let rows=simplePath($('#tablePath').value);if(!Array.isArray(rows))rows=[rows];rows=rows.filter(x=>x&&typeof x==='object'&&!Array.isArray(x));let out=$('#tableOut');if(!rows.length){out.innerHTML='<div style="padding:8px">Aucune ligne objet. Choisis une racine correspondant à un array d’objets.</div>';return}
+ let cols=[...new Set(rows.flatMap(r=>Object.keys(r)))];if(tableSort.col&&cols.includes(tableSort.col)){const c=tableSort.col,d=tableSort.dir;rows=[...rows].sort((a,b)=>{let av=a[c],bv=b[c];if(typeof av==='number'&&typeof bv==='number')return(av-bv)*d;return String(av??'').localeCompare(String(bv??''),'fr',{numeric:true,sensitivity:'base'})*d})}
+ let filters=$('#filterToggle').checked;
+ const colgroup='<colgroup>'+cols.map(()=>'<col style="width:160px">').join('')+'</colgroup>';
+ out.innerHTML='<table>'+colgroup+'<thead><tr>'+cols.map((c,i)=>'<th data-col="'+i+'"><span>'+esc(c)+'</span><button class="sortbtn" data-sort="'+esc(c)+'">'+(tableSort.col===c?(tableSort.dir===1?'▲':'▼'):'↕')+'</button><span class="colresizer" data-resize="'+i+'"></span></th>').join('')+'</tr>'+(filters?'<tr class="filterrow">'+cols.map((c,i)=>'<th><input data-fi="'+i+'" placeholder="Rechercher…"></th>').join('')+'</tr>':'')+'</thead><tbody>'+rows.map(r=>'<tr>'+cols.map(c=>'<td>'+renderCell(r[c])+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+ makeResizable(out.querySelector('table'));
+ out.querySelectorAll('[data-sort]').forEach(b=>b.onclick=e=>{e.stopPropagation();const c=b.dataset.sort;if(tableSort.col===c)tableSort.dir*=-1;else{tableSort.col=c;tableSort.dir=1}renderTable()});
+ out.querySelectorAll('[data-fi]').forEach(inp=>inp.oninput=()=>{let vals=[...out.querySelectorAll('[data-fi]')].map(x=>x.value.toLowerCase());out.querySelectorAll('tbody tr').forEach(tr=>{let cells=[...tr.children];tr.style.display=vals.every((v,i)=>!v||cells[i].textContent.toLowerCase().includes(v))?'':'none'})})
+}
+function renderCell(v){if(typeof v==='string'&&/^https?:\/\//.test(v))return '<a href="'+esc(v)+'" target="_blank">'+esc(v)+'</a>';return esc(typeof v==='object'?JSON.stringify(v):v)}
+function makeResizable(table){
+ if(!table)return;const cols=[...table.querySelectorAll('col')];
+ table.querySelectorAll('[data-resize]').forEach(r=>r.onpointerdown=e=>{
+   e.preventDefault();e.stopPropagation();const idx=Number(r.dataset.resize),col=cols[idx],start=e.clientX,startW=col.getBoundingClientRect().width;
+   const mv=ev=>{col.style.width=Math.max(60,startW+ev.clientX-start)+'px'};
+   const up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up)};
+   window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);
+ });
+}
+
+/* project views */
+function allWork(){let arr=[];function walk(items,phase,level=1){for(const x of items||[]){arr.push({...x,_phase:phase,_level:level});walk(x.children,phase,level+1)}}for(const p of cur()?.data?.phases||[])walk(p.children,p.id);return arr}
+function deliveryProgress(){let p=(cur()?.data?.phases||[]).filter(x=>x.progress_scope==='delivery');return p.length?p.reduce((s,x)=>s+Number(x.progress||0),0)/p.length:0}
+function renderOverview(){
+ if(!isPM()){pmUnavailable('#metrics');$('#timeline').innerHTML='';$('#overviewOut').innerHTML='';return}
+ const w=allWork(),blockers=w.filter(x=>x.status==='blocked'||x.blocking&&x.status!=='done'),human=w.filter(x=>x.status==='waiting_human'),dp=deliveryProgress();
+ $('#metrics').classList.add('compactMetrics');$('#metrics').innerHTML=[['Livraison',dp.toFixed(1)+'%',false],['Tâches',w.length,false],['Terminées',w.filter(x=>x.status==='done').length,false],['En cours',w.filter(x=>x.status==='in_progress').length,false],['Blocages',blockers.length,true],['Validations humaines',human.length,false]].map(x=>'<div class="metric '+(x[2]?'blockmetric':'')+'"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');
+ $('#timeline').className='cockpitFlow';$('#timeline').innerHTML=(cur().data.phases||[]).map(p=>'<div class="cockpitPhase" style="--phaseColor:'+phaseColors[p.id]+'"><b>'+esc(p.label)+'</b><div>'+esc(p.status)+' · '+esc(p.progress)+'%</div><div class="bar"><span style="width:'+p.progress+'%;background:'+phaseColors[p.id]+'"></span></div></div>').join('');
+ $('#overviewOut').innerHTML='<div class="kpiProgress"><div class="fill" style="width:'+dp+'%"></div><div class="txt">'+dp.toFixed(1)+'% livraison</div></div><details class="section" open><summary>Blocages et prochaine cible</summary><div><p><b>Prochaine cible :</b> '+esc(cur().data.next_target||'—')+'</p>'+(cur().data.blocking_reasons||[]).map(x=>'<div class="notice bad">'+esc(x)+'</div>').join('')+'</div></details>'
+}
+function pmUnavailable(sel){$(sel).innerHTML='<div class="notice warn">Vue spécifique Project Master indisponible pour ce JSON.</div>'}
+function navigateToPath(path){
+ if(!path||!String(path).startsWith('$'))return;selectedPath=path;openPaths=new Set(['$']);let acc='$';
+ for(const t of pathTokens(path)){acc+=typeof t==='number'?'['+t+']':'.'+t;openPaths.add(acc)}
+ const b=document.querySelector('.tabs button[data-view="hierarchy"]');document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));b?.classList.add('active');document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$('#hierarchy').classList.add('active');renderTree();renderContext();setStatus('Navigation vers '+path)
+}
+function renderCatalog(){
+ if(!isPM()){pmUnavailable('#catalogOut');return}
+ $('#catalogOut').innerHTML=(cur().data_model.data_registry||[]).map(x=>{const p=x.path||'—',u=/^https?:\/\//.test(p),jp=/^\$/.test(p);let ph=u?'<a href="'+esc(p)+'" target="_blank">'+esc(p)+'</a><a class="openLink" href="'+esc(p)+'" target="_blank">↗</a>':jp?'<span class="catalogPath" data-navpath="'+esc(p)+'">'+esc(p)+'</span>':esc(p);return '<div class="card"><h3>'+esc(x.id)+'</h3><p>'+esc(x.description||'')+'</p><div class="kv"><b>kind</b><span>'+esc(x.kind)+'</span><b>format</b><span>'+esc(x.format)+'</span><b>path</b><span>'+ph+'</span></div></div>'}).join('');
+ $('#catalogOut').querySelectorAll('[data-navpath]').forEach(e=>e.onclick=()=>navigateToPath(e.dataset.navpath))
+}
+function renderDictionary(){if(!isPM()){pmUnavailable('#dictionaryOut');return}$('#dictionaryOut').innerHTML=Object.entries(cur().data_model.data_dictionary||{}).map(([k,d])=>'<div class="card"><h3>'+esc(k)+'</h3><p>'+esc(d.description||'')+'</p><div class="kv"><b>type</b><span>'+esc(d.type)+'</span><b>source</b><span>'+esc(d.source)+'</span><b>unit</b><span>'+esc(d.unit||'—')+'</span></div></div>').join('')}
+function renderJoins(){if(!isPM()){pmUnavailable('#joinsOut');return}$('#joinsOut').innerHTML=(cur().data_model.join_registry||[]).map(j=>'<div class="card"><h3>'+esc(j.id)+'</h3><div class="kv"><b>left</b><span>'+esc(j.left_collection)+'</span><b>right</b><span>'+esc(j.right_collection)+'</span><b>type</b><span>'+esc(j.type)+'</span><b>cardinality</b><span>'+esc(j.cardinality)+'</span></div></div>').join('')||'<div class="notice">Aucune jointure déclarée dans ce projet.</div>'}
+function enhanceTable(container){
+ const table=container.querySelector('table');if(!table)return;makeResizable(table);
+ table.querySelectorAll('thead th').forEach((th,i)=>{const b=document.createElement('button');b.className='sortbtn';b.textContent='↕';th.appendChild(b);b.onclick=e=>{e.stopPropagation();const rows=[...table.tBodies[0].rows],asc=b.dataset.dir!=='asc';b.dataset.dir=asc?'asc':'desc';b.textContent=asc?'▲':'▼';rows.sort((a,c)=>a.cells[i].textContent.localeCompare(c.cells[i].textContent,'fr',{numeric:true,sensitivity:'base'})*(asc?1:-1));rows.forEach(r=>table.tBodies[0].appendChild(r))}})
+}
+function renderRoadmap(){
+ if(!isPM()){pmUnavailable('#roadmapOut');return}let phases=cur().data.phases||[],dp=deliveryProgress();
+ $('#roadmapOut').innerHTML='<div class="kpiProgress"><div class="fill" style="width:'+dp+'%"></div><div class="txt">'+dp.toFixed(1)+'% — progression livraison</div></div><div class="cockpitFlow">'+phases.map(p=>'<div class="cockpitPhase" style="--phaseColor:'+phaseColors[p.id]+'"><b>'+esc(p.label)+'</b><div>'+esc(p.progress)+'%</div><div class="bar"><span style="width:'+p.progress+'%;background:'+phaseColors[p.id]+'"></span></div></div>').join('')+'</div><details class="section" open><summary>Tableau détaillé des phases</summary><div id="roadmapTableWrap" class="tablewrap striped"><table><colgroup><col style="width:190px"><col style="width:110px"><col style="width:100px"><col style="width:420px"></colgroup><thead><tr><th>Phase<span class="colresizer" data-resize="0"></span></th><th>Statut<span class="colresizer" data-resize="1"></span></th><th>Progression<span class="colresizer" data-resize="2"></span></th><th>Critère<span class="colresizer" data-resize="3"></span></th></tr></thead><tbody>'+phases.map(p=>'<tr><td>'+esc(p.label)+'</td><td>'+esc(p.status)+'</td><td>'+esc(p.progress)+'%</td><td>'+esc(p.blocking_criterion)+'</td></tr>').join('')+'</tbody></table></div></details>';enhanceTable($('#roadmapTableWrap'))
+}
+
+/* gantt */
+$('#gDepth').oninput=e=>{ganttDepth=Number(e.target.value);$('#gDepthLabel').textContent=ganttDepth;renderGantt()};$('#gExpand').onclick=()=>{$('#gDepth').value=5;ganttDepth=5;renderGantt()};$('#gCollapse').onclick=()=>{$('#gDepth').value=0;ganttDepth=0;$('#gDepthLabel').textContent='0';renderGantt()};
+$('#gZoom').oninput=e=>{ganttZoom=Number(e.target.value);$('#gZoomLabel').textContent=ganttZoom+'%';renderGantt()};
+$('#gApplyFilters').onclick=()=>{ganttFilters={start:$('#gStartFilter').value,end:$('#gEndFilter').value,rows:$('#gRowFilter').value};renderGantt()};
+$('#gClearFilters').onclick=()=>{$('#gStartFilter').value='';$('#gEndFilter').value='';$('#gRowFilter').value='';ganttFilters={start:'',end:'',rows:''};renderGantt()};
+
+function parseDate(s){return new Date(s+'T00:00:00')}
+function dayDiff(a,b){return Math.round((parseDate(b)-parseDate(a))/86400000)}
+function allGanttNodes(){let arr=[];for(const p of cur().data.phases||[]){arr.push({_isPhase:true,id:p.id,title:p.label,status:p.status,progress:p.progress,_level:0,children:p.children});function walk(xs,l){for(const x of xs||[]){arr.push({...x,_phase:p.id,_level:l});walk(x.children,l+1)}}walk(p.children,1)}return arr}
+function renderGantt(){
+ if(!isPM()){pmUnavailable('#ganttOut');$('#phaseWeight').innerHTML='';return}
+ let nodes=allGanttNodes().filter(x=>x._isPhase||x._level<=ganttDepth),tasks=allWork().filter(x=>x.extensions?.schedule);
+ if(ganttFilters.start)tasks=tasks.filter(t=>t.extensions.schedule.end_date>=ganttFilters.start);if(ganttFilters.end)tasks=tasks.filter(t=>t.extensions.schedule.start_date<=ganttFilters.end);
+ if(!tasks.length){$('#ganttOut').innerHTML='<div class="notice">Aucune donnée de planning pour ces filtres.</div>';return}
+ const starts=tasks.map(t=>t.extensions.schedule.start_date).sort(),ends=tasks.map(t=>t.extensions.schedule.end_date).sort(),start=starts[0],end=ends.at(-1),total=Math.max(1,dayDiff(start,end)+1),phases=cur().data.phases||[],counts=phases.map(p=>allWork().filter(t=>t._phase===p.id).length),sum=Math.max(1,counts.reduce((a,b)=>a+b,0));
+ $('#phaseWeight').innerHTML=phases.map((p,i)=>'<div title="'+esc(p.label)+'" style="width:'+(counts[i]/sum*100)+'%;background:'+phaseColors[p.id]+'">'+esc(p.id.slice(0,6))+' '+Math.round(counts[i]/sum*100)+'%</div>').join('');$('#phaseLegend').innerHTML=phases.map(p=>'<span style="background:'+phaseColors[p.id]+'">'+esc(p.label)+'</span>').join('');
+ let displayed=[];for(const n of nodes){if(n._isPhase){displayed.push(n);continue}if(!n.extensions?.schedule)continue;if(ganttFilters.start&&n.extensions.schedule.end_date<ganttFilters.start)continue;if(ganttFilters.end&&n.extensions.schedule.start_date>ganttFilters.end)continue;displayed.push(n)}
+ const rs=parseNumericSpec(ganttFilters.rows,displayed.length),has=String(ganttFilters.rows||'').trim()!=='';displayed=displayed.filter((_,i)=>!has||rs.has(i+1));
+ const days=Math.max(10,Math.min(62,Math.round(Math.min(total,31)*ganttZoom/100)));let html='<div class="ggrid" style="min-width:'+(310+days*30)+'px"><div class="grow" style="grid-template-columns:310px repeat('+days+',30px)"><div class="gname"><b>Phase / tâche</b></div>'+Array.from({length:days},(_,i)=>'<div class="gday">'+(i+1)+'</div>').join('')+'</div>';let idx=0;
+ for(const n of displayed){idx++;const row='grid-template-columns:310px repeat('+days+',30px)';if(n._isPhase){html+='<div class="grow gphase" style="'+row+'"><div class="gname" style="border-left:7px solid '+phaseColors[n.id]+'">'+idx+'. '+esc(n.title)+' · '+esc(n.progress)+'%</div><div class="gbarwrap" style="--s:2;--e:'+(days+2)+'"><div class="gbar" style="background:'+phaseColors[n.id]+'"></div></div></div>';continue}const sc=n.extensions.schedule,s=Math.max(1,Math.floor(dayDiff(start,sc.start_date)/total*days)+1),e=Math.min(days+1,Math.max(s+1,Math.ceil((dayDiff(start,sc.end_date)+1)/total*days)+1)),segs=(n.extensions.assignments||[]).map(a=>'<div class="seg" style="width:'+a.contribution_percent+'%;background:'+(agentColors[a.agent_id]||'#cbd5e1')+'"></div>').join('');html+='<div class="grow" style="'+row+'"><div class="gname" style="padding-left:'+(5+n._level*12)+'px;border-left:5px solid '+(phaseColors[n._phase]||'#94a3b8')+'">'+idx+'. '+esc(n.title)+' <span class="type">'+esc(n.status)+' · '+esc(n.progress)+'%</span></div><div class="gbarwrap" style="--s:'+(s+1)+';--e:'+(e+1)+'"><div class="gbar" data-task="'+esc(n.id)+'">'+segs+'</div></div></div>'}
+ $('#ganttOut').innerHTML=html+'</div>';$('#ganttOut').querySelectorAll('[data-task]').forEach(x=>x.onclick=()=>showTask(x.dataset.task))
+}
+function showTask(id){const t=allWork().find(x=>x.id===id);if(!t)return;$('#floatTitle').textContent=t.title;$('#floatBody').innerHTML='<div class="kv"><b>ID</b><span>'+esc(t.id)+'</span><b>Phase</b><span>'+esc(t._phase)+'</span><b>Statut</b><span>'+esc(t.status)+'</span><b>Progression</b><span>'+esc(t.progress)+'%</span><b>Début</b><span>'+esc(t.extensions?.schedule?.start_date||'—')+'</span><b>Fin</b><span>'+esc(t.extensions?.schedule?.end_date||'—')+'</span><b>Dernière activité</b><span>'+esc(t.extensions?.last_activity_at||'—')+'</span></div><h4>Contributeurs</h4>'+(t.extensions?.assignments||[]).map(a=>'<div>'+esc(a.agent_id)+' — '+a.contribution_percent+'%</div>').join('')+'<p>'+esc(t.description||'')+'</p>';$('#floatCard').classList.remove('hidden')}
+$('#floatClose').onclick=()=>$('#floatCard').classList.add('hidden');$('#floatPin').onclick=()=>$('#floatCard').classList.toggle('pinned')
+let fdrag=false,foff=[0,0];document.querySelector('.floathead').onpointerdown=e=>{fdrag=true;let r=$('#floatCard').getBoundingClientRect();foff=[e.clientX-r.left,e.clientY-r.top]};window.addEventListener('pointermove',e=>{if(!fdrag)return;let el=$('#floatCard');el.style.left=(e.clientX-foff[0])+'px';el.style.top=(e.clientY-foff[1])+'px';el.style.right='auto';el.style.bottom='auto'});window.addEventListener('pointerup',()=>fdrag=false)
+
+/* tasks + agents */
+function renderTasks(){if(!isPM()){pmUnavailable('#tasksOut');return}let w=allWork(),sf=$('#taskStatus'),af=$('#taskAgent');if(sf.options.length===1)[...new Set(w.map(x=>x.status))].forEach(v=>sf.insertAdjacentHTML('beforeend','<option>'+esc(v)+'</option>'));let agents=cur().data_model.extensions?.agent_registry||[];if(af.options.length===1)agents.forEach(a=>af.insertAdjacentHTML('beforeend','<option value="'+esc(a.id)+'">'+esc(a.label)+'</option>'));let rows=w.filter(x=>(!sf.value||x.status===sf.value)&&(!af.value||(x.extensions?.assignments||[]).some(a=>a.agent_id===af.value)));const rr=parseNumericSpec($('#taskRowFilter').value,rows.length),hr=$('#taskRowFilter').value.trim()!=='';rows=rows.filter((_,i)=>!hr||rr.has(i+1));$('#tasksOut').innerHTML='<table><thead><tr><th>#<span class="colresizer"></span></th><th>Phase<span class="colresizer"></span></th><th>Tâche<span class="colresizer"></span></th><th>Statut<span class="colresizer"></span></th><th>Progression<span class="colresizer"></span></th><th>Contributeurs<span class="colresizer"></span></th><th>Blocage<span class="colresizer"></span></th></tr></thead><tbody>'+rows.map((t,i)=>'<tr><td>'+(i+1)+'/'+rows.length+'</td><td>'+esc(t._phase)+'</td><td><b>'+esc(t.title)+'</b><br><span class="type">'+esc(t.id)+'</span></td><td>'+esc(t.status)+'</td><td>'+esc(t.progress)+'%<div class="bar"><span style="width:'+Math.max(0,Math.min(100,t.progress||0))+'%"></span></div></td><td>'+(t.extensions?.assignments||[]).map(a=>esc(a.agent_id)+' '+a.contribution_percent+'%').join('<br>')+'</td><td>'+(t.blocking?'<b style="color:#dc2626">OUI</b>':'non')+'</td></tr>').join('')+'</tbody></table>';makeResizable($('#tasksOut').querySelector('table'))}
+$('#taskStatus').onchange=renderTasks;$('#taskAgent').onchange=renderTasks;$('#taskRowFilter').oninput=renderTasks;$('#taskOptsBtn').onclick=()=>$('#taskOptions').classList.toggle('open');$('#taskStripedToggle').onchange=e=>$('#tasksOut').classList.toggle('striped',e.target.checked)
+function renderAgents(){
+ if(!isPM()){pmUnavailable('#agentsOut');return}let agents=cur().data_model.extensions?.agent_registry||[],w=allWork();
+ $('#agentsOut').innerHTML=agents.map(a=>{let ts=w.filter(t=>(t.extensions?.assignments||[]).some(x=>x.agent_id===a.id)),sorted=ts.filter(t=>t.extensions?.last_activity_at).sort((x,y)=>String(y.extensions.last_activity_at).localeCompare(String(x.extensions.last_activity_at))),last=sorted[0],log=sorted.map(t=>{let as=(t.extensions.assignments||[]).find(x=>x.agent_id===a.id);return '<tr><td>'+esc(t.title)+'</td><td>'+esc(t.extensions.schedule?.start_date||'—')+'</td><td>'+esc(t.extensions.schedule?.end_date||'—')+'</td><td>'+esc(t.status)+'</td><td>'+esc(as?.contribution_percent||0)+'%</td></tr>'}).join('');return '<div class="card"><div class="agentHead"><span class="agentDot" style="background:'+(agentColors[a.id]||'#cbd5e1')+'"></span><h3>'+esc(a.label)+'</h3></div><div class="kv"><b>Type</b><span>'+esc(a.type)+'</span><b>Total tâches</b><span>'+ts.length+'</span><b>Terminées</b><span>'+ts.filter(t=>t.status==='done').length+'</span><b>En cours</b><span>'+ts.filter(t=>t.status==='in_progress').length+'</span><b>Bloquées</b><span>'+ts.filter(t=>t.status==='blocked').length+'</span><b>Dernière tâche</b><span>'+esc(last?.title||'—')+'</span><b>Date/heure</b><span>'+esc(last?.extensions?.last_activity_at||'—')+'</span></div><div class="agentLog"><table><thead><tr><th>Tâche</th><th>Début</th><th>Fin</th><th>État</th><th>Contribution</th></tr></thead><tbody>'+log+'</tbody></table></div></div>'}).join('')
+}
+
+/* render *//* render */
+function renderAll(){
+ if(!currentId){document.querySelectorAll('.view').forEach(v=>{let p=v.querySelector('.panel');if(p)p.innerHTML='<div class="notice">Ajoute un JSON ou une démo.</div>'});return}
+ renderRaw();renderTree();renderContext();renderForm();renderPathPicker();renderTable();updateSplitLayout();renderOverview();renderCatalog();renderDictionary();renderJoins();renderRoadmap();renderGantt();renderTasks();renderAgents();
+}
+Object.entries(DEMOS).forEach(([name,obj])=>{const id=idFor(name);docs[id]={id,name,baseline:clone(obj),working:clone(obj),openedAt:new Date().toISOString()};if(!currentId)currentId=id});
+refreshDocSelect();renderAll();setStatus(Object.keys(DEMOS).length+' JSON de démonstration préchargés');
+</script>
+</body>
+</html>
