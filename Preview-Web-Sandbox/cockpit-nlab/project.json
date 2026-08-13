@@ -1,0 +1,7 @@
+{
+  "project_id": "cockpit-nlab",
+  "display_name": "Cockpit nLab",
+  "description": "Cockpit de pilotage nLab / Control Plane.",
+  "repository": "nepheris/nLab",
+  "production": null
+}
