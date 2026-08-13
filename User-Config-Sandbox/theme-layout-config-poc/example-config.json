@@ -1,0 +1,19 @@
+{
+  "schema_version": "nlab.webmaster-layout-config/0.1",
+  "config_id": "CFG-WMP-PUBLIC-SANDBOX-0001",
+  "name": "Configuration de démonstration",
+  "storage": {
+    "visibility": "public_repository_unlisted_from_preview",
+    "repository": "nepheris/nLab-Webmaster-Preview",
+    "path": "User-Config-Sandbox/theme-layout-config-poc/example-config.json"
+  },
+  "theme": "dark",
+  "scope": "local",
+  "sections": [],
+  "floating_windows": [],
+  "audit": {
+    "created_at": "2026-08-13T13:30:00Z",
+    "created_by": "GPT-007",
+    "status": "write_target_initialized"
+  }
+}
