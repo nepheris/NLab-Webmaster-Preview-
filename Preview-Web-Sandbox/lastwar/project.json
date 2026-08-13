@@ -7,5 +7,10 @@
     "status": "production",
     "label": "Site public en production",
     "url": "https://lastwar2245.github.io/"
+  },
+  "visual": {
+    "type": "emoji",
+    "value": "⚔️🧟",
+    "source": "site-header"
   }
 }
