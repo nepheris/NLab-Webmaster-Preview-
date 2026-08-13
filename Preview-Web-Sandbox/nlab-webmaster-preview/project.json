@@ -1,0 +1,20 @@
+{
+  "project_id": "nlab-webmaster-preview",
+  "display_name": "nLab Webmaster Review",
+  "description": "Revue versionnée du portail nLab Webmaster Preview. V2.4 est le socle MVP de référence ; les évolutions suivantes restent des previews comparables.",
+  "repository": "nepheris/nLab-Webmaster-Preview",
+  "visual": {
+    "type": "nlab",
+    "label": "nLab"
+  },
+  "production": {
+    "url": "https://nepheris.github.io/nLab-Webmaster-Preview/Preview-Web-Sandbox/nlab-webmaster-preview/production-current/",
+    "label": "MVP V2.4 · référence de pré-production"
+  },
+  "preview_status": {
+    "state": "to_review",
+    "label": "V2.5 · thèmes de disposition, sections sticky et review compacte",
+    "baseline": "V2.4",
+    "candidate": "V2.5"
+  }
+}

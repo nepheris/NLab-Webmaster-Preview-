@@ -65,7 +65,8 @@ jobs:
               '<script src="assets/preview-v14.js"></script>\n'
               '<script src="assets/preview-v15.js"></script>\n'
               '<script src="assets/preview-v19.js"></script>\n'
-              '<script src="assets/preview-sandbox-center.js"></script>'
+              '<script src="assets/preview-sandbox-center.js"></script>\n'
+              '<script src="assets/preview-v25.js"></script>'
           )
           if needle not in text:
               raise SystemExit('preview-browser script marker missing')
@@ -83,6 +84,7 @@ jobs:
           node --check assets/preview-v171-hotfix.js
           node --check assets/preview-v19.js
           node --check assets/preview-sandbox-center.js
+          node --check assets/preview-v25.js
           python3 - <<'PY'
           from pathlib import Path
           html=Path('index.html').read_text(encoding='utf-8')
@@ -107,8 +109,9 @@ jobs:
           settings='assets/preview-v15.js'
           modes='assets/preview-v19.js'
           sandbox='assets/preview-sandbox-center.js'
+          layout='assets/preview-v25.js'
           retired=('assets/preview-ui-fixes.js','assets/preview-resilience.js','assets/preview-v13.js','assets/preview-v16.js','assets/preview-v17.js','assets/preview-v171-hotfix.js')
-          if not (html.index(runtime) < html.index(browser) < html.index(github) < html.index(settings) < html.index(modes) < html.index(sandbox)):
+          if not (html.index(runtime) < html.index(browser) < html.index(github) < html.index(settings) < html.index(modes) < html.index(sandbox) < html.index(layout)):
               raise SystemExit('minimal startup order is invalid')
           for script in retired:
               if script in html:
@@ -242,6 +245,9 @@ jobs:
           test -f _site/assets/config/priority-registry.json
           test -f _site/assets/config/private-data-auth.json
           test -f _site/Preview-Web-Sandbox/README.md
+          test -f _site/Preview-Web-Sandbox/nlab-webmaster-preview/production-current/index.html
+          test -f _site/Preview-Web-Sandbox/nlab-webmaster-preview/20260813_150000_V2.5-layout-themes/index.html
+          grep -q "const VERSION='V2.5'" _site/assets/preview-v25.js
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -255,7 +261,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Smoke test deployed V2.4 in Chrome
+      - name: Smoke test deployed V2.5 in Chrome
         env:
           PREVIEW_URL: ${{ steps.deployment.outputs.page_url }}
         shell: bash
@@ -265,12 +271,15 @@ jobs:
           for attempt in 1 2 3 4; do
             echo "Public Chrome smoke attempt ${attempt}/4"
             if timeout 25s google-chrome --headless=new --no-sandbox --disable-dev-shm-usage --enable-logging=stderr --log-level=0 --virtual-time-budget=6000 --dump-dom "${PREVIEW_URL}?ci=${GITHUB_SHA}" > .review-build/public-dom.html 2> .review-build/chrome.log; then
-              if grep -q 'nLab Webmaster Preview · V2.4' .review-build/public-dom.html \
+              if grep -q 'nLab Webmaster Preview · V2.5' .review-build/public-dom.html \
                 && grep -q 'class="project-card"' .review-build/public-dom.html \
                 && grep -q 'lighthouse-version-link' .review-build/public-dom.html \
                 && grep -q 'lighthouse-production-link' .review-build/public-dom.html \
                 && grep -q 'temporary-project.svg' .review-build/public-dom.html \
-                && grep -q 'id="projectFilters"' .review-build/public-dom.html; then
+                && grep -q 'id="projectFilters"' .review-build/public-dom.html \
+                && grep -q 'v25-layout-controls' .review-build/public-dom.html \
+                && grep -q 'id="v14GithubCenter"' .review-build/public-dom.html \
+                && grep -q 'nLab Webmaster Review' .review-build/public-dom.html; then
                 ok=1
                 break
               fi
@@ -279,7 +288,7 @@ jobs:
           done
           if [[ "${ok}" != 1 ]]; then
             tail -80 .review-build/chrome.log || true
-            grep -E 'statusText|project-card|lighthouse-version-link|V2\.4' .review-build/public-dom.html | head -40 || true
+            grep -E 'statusText|project-card|lighthouse-version-link|V2\.5' .review-build/public-dom.html | head -40 || true
             exit 1
           fi
           python3 - <<'PY'
@@ -291,6 +300,6 @@ jobs:
               'lighthouse_version_links': html.count('lighthouse-version-link'),
               'lighthouse_production_links': html.count('lighthouse-production-link'),
               'project_filter_chips': html.count('project-filter-chip'),
-              'version': 'V2.4',
+              'version': 'V2.5',
           })
           PY
