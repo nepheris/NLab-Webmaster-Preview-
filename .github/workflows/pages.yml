@@ -244,3 +244,38 @@ jobs:
       - name: Deploy Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Smoke test deployed V2.3 in Chrome
+        env:
+          PREVIEW_URL: ${{ steps.deployment.outputs.page_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in 1 2 3 4; do
+            echo "Public Chrome smoke attempt ${attempt}/4"
+            if timeout 25s google-chrome --headless=new --no-sandbox --disable-dev-shm-usage --virtual-time-budget=6000 --dump-dom "${PREVIEW_URL}?ci=${GITHUB_SHA}" > .review-build/public-dom.html 2> .review-build/chrome.log; then
+              if grep -q 'nLab Webmaster Preview · V2.3' .review-build/public-dom.html \
+                && grep -q 'class="project-card"' .review-build/public-dom.html \
+                && grep -q 'lighthouse-version-link' .review-build/public-dom.html; then
+                ok=1
+                break
+              fi
+            fi
+            sleep 5
+          done
+          if [[ "${ok}" != 1 ]]; then
+            tail -80 .review-build/chrome.log || true
+            grep -E 'statusText|project-card|lighthouse-version-link|V2\.3' .review-build/public-dom.html | head -40 || true
+            exit 1
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('.review-build/public-dom.html').read_text(encoding='utf-8')
+          print({
+              'status': 'PASS',
+              'project_cards': html.count('class="project-card"'),
+              'lighthouse_links': html.count('lighthouse-version-link'),
+              'version': 'V2.3',
+          })
+          PY
