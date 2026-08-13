@@ -247,6 +247,10 @@ jobs:
           test -f _site/Preview-Web-Sandbox/README.md
           test -f _site/Preview-Web-Sandbox/nlab-webmaster-preview/production-current/index.html
           test -f _site/Preview-Web-Sandbox/nlab-webmaster-preview/20260813_150000_V2.5-layout-themes/index.html
+          test -f _site/Preview-Web-Sandbox/nlab-gantt-dashboard/20260813_160000_V0.2-hierarchical/index.html
+          test -f _site/Preview-Web-Sandbox/nlab-gantt-dashboard/20260813_160000_V0.2-hierarchical/project-hierarchy.json
+          grep -q 'project-hierarchy-v0.2' _site/Preview-Web-Sandbox/nlab-gantt-dashboard/20260813_160000_V0.2-hierarchical/index.html
+          grep -q 'network_requests_on_load' _site/Preview-Web-Sandbox/nlab-gantt-dashboard/20260813_160000_V0.2-hierarchical/project-hierarchy.json
           grep -q "const VERSION='V2.5'" _site/assets/preview-v25.js
 
       - name: Configure Pages
