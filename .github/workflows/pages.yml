@@ -223,7 +223,13 @@ jobs:
           test -f _site/assets/config/sandbox-features.json
           test -f _site/assets/project-logos/default-project.svg
           test -f _site/assets/project-logos/temporary-project.svg
-          grep -q '"status": "validated"' _site/Preview-Web-Sandbox/nlab-wordmark-text/project.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('_site/Preview-Web-Sandbox/nlab-wordmark-text/project.json').read_text(encoding='utf-8'))
+          if data.get('preview_status',{}).get('state') != 'validated':
+              raise SystemExit('nLab mini-logo validation state missing')
+          PY
           grep -q 'nlab-mini-logo-text' _site/assets/config/sandbox-features.json
           test -f _site/LIGHTHOUSE-BENCHMARK-PROCESS.md
           grep -q 'lighthouse-benchmark' _site/assets/config/sandbox-features.json
