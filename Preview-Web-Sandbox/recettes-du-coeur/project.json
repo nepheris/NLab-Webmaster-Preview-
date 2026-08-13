@@ -5,8 +5,8 @@
   "repository": "recettesducoeur/recettesducoeur.github.io",
   "visual": {
     "type": "image",
-    "url": "https://recettesducoeur.github.io/assets/images/logos/favicon.png",
-    "source": "production-favicon"
+    "url": "assets/runtime/images/recettes-du-coeur.png",
+    "source": "mirrored-production-favicon"
   },
   "production": {
     "status": "production",
