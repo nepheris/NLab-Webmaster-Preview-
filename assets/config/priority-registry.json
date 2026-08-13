@@ -1,0 +1,34 @@
+{
+  "registry_id": "nlab-preview-priority-v1",
+  "schema_status": "provisoire",
+  "items": [
+    {
+      "id": "low",
+      "label": "Basse",
+      "short_label": "B",
+      "color": "#6f7d8c",
+      "svg_path": "M5 12h14M9 8l-4 4 4 4"
+    },
+    {
+      "id": "normal",
+      "label": "Normale",
+      "short_label": "N",
+      "color": "#3282ca",
+      "svg_path": "M5 12h14"
+    },
+    {
+      "id": "high",
+      "label": "Haute",
+      "short_label": "H",
+      "color": "#d28a24",
+      "svg_path": "M5 12h14M15 8l4 4-4 4"
+    },
+    {
+      "id": "critical",
+      "label": "Critique",
+      "short_label": "C",
+      "color": "#d45252",
+      "svg_path": "M12 4v10M12 18h.01"
+    }
+  ]
+}
