@@ -27,21 +27,18 @@ td>a{color:var(--accent);font-weight:700;text-decoration:none}td>a:hover{text-de
 .dash-history-list a:hover{border-color:var(--accent);background:var(--accent-soft)}
 .dash-history-list a b{font-size:11px}.dash-history-list a span{color:var(--muted);font-size:11px}
 .dash-table td>a{display:inline-block}.dash-table td>a small{display:block;color:var(--muted);font-weight:500}
+.github-test.pass{border-color:var(--green);color:var(--green)}.github-test.fail{border-color:var(--red);color:var(--red)}
 @media(max-width:680px){.project-visual{width:34px;height:34px}.dash-history-list{min-width:0}.dash-history-list a{grid-template-columns:1fr}.project-identity{align-items:flex-start}}
 `;
 document.head.appendChild(style);
 const table=document.getElementById('previewTable');
-if(!table)return;
-const rows=table.tHead?.rows;
-if(!rows||rows.length<2)return;
-const head=rows[0], filters=rows[1];
-if(!head.querySelector('[data-sort="production"]')){
-  const th=document.createElement('th');
-  th.dataset.sort='production';
-  th.innerHTML='Production<span class="col-resizer"></span>';
-  head.insertBefore(th,head.children[4]||null);
-  const f=document.createElement('th');
-  f.innerHTML='<input data-col-filter="production" placeholder="Production">';
-  filters.insertBefore(f,filters.children[4]||null);
+if(table){const rows=table.tHead?.rows;if(rows&&rows.length>=2){const head=rows[0],filters=rows[1];if(!head.querySelector('[data-sort="production"]')){const th=document.createElement('th');th.dataset.sort='production';th.innerHTML='Production<span class="col-resizer"></span>';head.insertBefore(th,head.children[4]||null);const f=document.createElement('th');f.innerHTML='<input data-col-filter="production" placeholder="Production">';filters.insertBefore(f,filters.children[4]||null)}}}
+// Diagnostic distinct du futur bouton d'écriture authentifiée.
+const toolbar=document.querySelector('.toolbar');
+if(toolbar&&!document.getElementById('githubTestBtn')){
+  const disabled=[...toolbar.querySelectorAll('button')].find(b=>b.textContent.includes('Enregistrer sur GitHub'));
+  const btn=document.createElement('button');btn.id='githubTestBtn';btn.className='btn github-test';btn.type='button';btn.innerHTML='GitHub · Tester le POC';btn.title='Vérifie la présence du POC de persistance dans .reviews/ ; ne réalise pas encore une écriture authentifiée depuis le navigateur.';
+  if(disabled) toolbar.insertBefore(btn,disabled); else toolbar.appendChild(btn);
+  btn.addEventListener('click',async()=>{btn.disabled=true;btn.textContent='GitHub · Test…';btn.classList.remove('pass','fail');try{const url='https://api.github.com/repos/nepheris/nLab-Webmaster-Preview/contents/Preview-Web-Sandbox/.reviews/_poc/github-write-test.json?ref=main';const r=await fetch(url,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);btn.textContent='GitHub · POC PASS';btn.classList.add('pass')}catch(e){console.error(e);btn.textContent='GitHub · POC ÉCHEC';btn.classList.add('fail')}finally{btn.disabled=false}});
 }
 })();
