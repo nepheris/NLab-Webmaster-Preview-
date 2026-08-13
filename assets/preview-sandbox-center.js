@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 
-const VERSION='V2.1';
+const VERSION='V2.2';
 const CATALOG_URL='assets/config/sandbox-features.json';
 const AUTH_URL='assets/config/private-data-auth.json';
 const STORE_KEY='nlab-preview-sandbox-reviews-v1';

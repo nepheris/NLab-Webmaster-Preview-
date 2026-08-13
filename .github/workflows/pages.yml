@@ -61,6 +61,7 @@ jobs:
           needle='<script src="assets/preview-browser.js"></script>'
           replacement=(
               '<script src="assets/runtime/public-inventory.js"></script>\n'
+              '<script src="assets/preview-v171-hotfix.js"></script>\n'
               '<script src="assets/preview-ui-fixes.js"></script>\n'
               '<script src="assets/preview-resilience.js"></script>\n'
               + needle + '\n'
@@ -69,7 +70,6 @@ jobs:
               '<script src="assets/preview-v15.js"></script>\n'
               '<script src="assets/preview-v16.js"></script>\n'
               '<script src="assets/preview-v17.js" data-nlab-v17="1"></script>\n'
-              '<script src="assets/preview-v171-hotfix.js"></script>\n'
               '<script src="assets/preview-v19.js"></script>\n'
               '<script src="assets/preview-sandbox-center.js"></script>'
           )
@@ -102,18 +102,21 @@ jobs:
           test -f assets/nlab-wordmark.svg
           test -s assets/runtime/images/recettes-du-coeur.png
 
-          # Invariants de démarrage : runtime avant le scanner, V1.7 une seule fois,
-          # aucune URL externe pour l'icône chargée automatiquement.
+          # Invariants de démarrage : snapshot puis garde anti-boucle avant tous les
+          # décorateurs, runtime avant le scanner, V1.7 une seule fois.
           python3 - <<'PY'
           from pathlib import Path
           html=Path('_site/index.html').read_text(encoding='utf-8')
           runtime='assets/runtime/public-inventory.js'
+          guard='assets/preview-v171-hotfix.js'
+          ui='assets/preview-ui-fixes.js'
           browser='assets/preview-browser.js'
+          v13='assets/preview-v13.js'
           v17='assets/preview-v17.js'
           if html.count(v17) != 1:
               raise SystemExit(f'preview-v17.js count={html.count(v17)}, expected 1')
-          if html.index(runtime) > html.index(browser):
-              raise SystemExit('public runtime must load before preview-browser.js')
+          if not (html.index(runtime) < html.index(guard) < html.index(ui) < html.index(browser) < html.index(v13)):
+              raise SystemExit('startup guard must load before every gallery decorator')
           if 'data-nlab-v17="1"' not in html:
               raise SystemExit('V1.7 static marker missing')
           meta=Path('_site/Preview-Web-Sandbox/recettes-du-coeur/project.json').read_text(encoding='utf-8')
@@ -231,7 +234,7 @@ jobs:
           test -s _site/assets/runtime/images/recettes-du-coeur.png
           grep -q "const VERSION='V1.8'" _site/assets/preview-v171-hotfix.js
           grep -q "const VERSION='V1.9'" _site/assets/preview-v19.js
-          grep -q "const VERSION='V2.1'" _site/assets/preview-sandbox-center.js
+          grep -q "const VERSION='V2.2'" _site/assets/preview-sandbox-center.js
           test -f _site/assets/config/priority-registry.json
           test -f _site/assets/config/private-data-auth.json
           test -f _site/Preview-Web-Sandbox/README.md

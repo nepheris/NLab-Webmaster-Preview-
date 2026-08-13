@@ -11,6 +11,9 @@ const assert=(condition,message)=>{if(!condition)throw new Error(message)};
 assert(html.includes('Actualiser l’arborescence'),'Manual tree refresh label missing');
 assert(html.includes('>Enregistrer</button>'),'Global save label missing');
 assert(core.includes('window.__nlabPublicRuntime'),'Static snapshot boot missing');
+assert(core.includes('lighthouseAuditUrl'),'Per-version Lighthouse URL builder missing');
+assert(core.includes('lighthouseVersionLink'),'Per-version Lighthouse action missing');
+assert(core.includes("audit.searchParams.set('url',target)"),'Lighthouse target URL must be computed lazily without fetching');
 assert(core.includes("document.dispatchEvent(new CustomEvent('nlab:save-request'"),'Explicit save event missing');
 assert(!sandbox.includes('trySync()'),'Automatic sandbox sync call remains');
 assert(sandbox.includes("document.addEventListener('nlab:save-request',handleSaveRequest)"),'Manual batch listener missing');
@@ -19,4 +22,4 @@ assert(sandbox.includes("localStorage.setItem(BATCH_KEY"),'Local batch queue mis
 assert(!github.includes('setTimeout(()=>{paintVersion();renderCenter()}'),'Automatic repeated auth render remains');
 assert(github.includes("event.target.closest?.('#v14GithubCenter')"),'Lazy GitHub center initialization missing');
 
-console.log(JSON.stringify({status:'PASS',snapshotBoot:true,automaticSync:false,browserSyncSites:1,manualTreeRefresh:true}));
+console.log(JSON.stringify({status:'PASS',snapshotBoot:true,automaticSync:false,browserSyncSites:1,manualTreeRefresh:true,perVersionLighthouse:true}));
