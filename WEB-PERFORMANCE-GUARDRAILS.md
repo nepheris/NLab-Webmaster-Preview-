@@ -52,6 +52,19 @@ Une fonctionnalité qui marche mais rend l'interface instable, bloque le navigat
 - Les caches doivent être bornés et invalidables.
 - Tester une boucle de navigation prolongée, pas seulement le premier rendu.
 
+
+### 6. Lighthouse, PageSpeed Insights et benchmarks
+
+- Les audits manuels ciblent toujours l'URL publique réellement déployée, jamais la page GitHub du dépôt.
+- La barre d'outils de la preview expose deux liens explicites : Mobile et Bureau.
+- L'ouverture du rapport reste une action HUMAN explicite ; aucun appel PageSpeed Insights n'est déclenché au chargement.
+- Comparer au minimum trois exécutions et retenir la médiane pour limiter la variabilité.
+- Conserver avec le rapport : URL, version visible, commit, date/heure, profil Mobile/Bureau et environnement de test.
+- Analyser les métriques et diagnostics, pas seulement le score global : LCP, CLS, TBT, FCP, Speed Index, poids transféré, nombre de requêtes, JavaScript inutilisé et ressources bloquant le rendu.
+- Distinguer données de laboratoire Lighthouse et données terrain Core Web Vitals/CrUX.
+- Une régression significative doit créer une action traçable avant promotion ; les seuils deviennent bloquants seulement après établissement d'une baseline fiable.
+- L'automatisation Lighthouse CI appartient au pipeline de benchmark/CI, jamais au runtime de la page.
+
 ## Budgets de validation par défaut
 
 - DOM normal: cible < 800 éléments; >1400 exige justification ou correction.
@@ -77,6 +90,9 @@ Avant de déclarer une preview « à valider »:
 - [ ] test gros dataset;
 - [ ] test navigation rapide;
 - [ ] test mobile ou viewport réduit;
+- [ ] audit Lighthouse/PageSpeed de l'URL publique en Mobile et Bureau;
+- [ ] comparaison de plusieurs exécutions et conservation de la médiane;
+- [ ] rapport associé à la version visible et au commit testés;
 - [ ] résultat documenté dans le dossier de preview.
 
 ## REX JSON Studio

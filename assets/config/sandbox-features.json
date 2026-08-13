@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "updated_at": "2026-08-13T09:45:00Z",
+  "updated_at": "2026-08-13T10:49:12.189Z",
   "categories": [
     {
       "id": "github",
@@ -9,6 +9,10 @@
     {
       "id": "governance",
       "label": "Gouvernance"
+    },
+    {
+      "id": "quality",
+      "label": "Qualité Web"
     }
   ],
   "features": [
@@ -50,6 +54,32 @@
           "label": "Centre Bac à sable intégré",
           "url": "./",
           "kind": "page"
+        }
+      ]
+    },
+    {
+      "id": "lighthouse-benchmark",
+      "category": "quality",
+      "name": "Audit Lighthouse et benchmark Web",
+      "version": "V2.1",
+      "status": "testing",
+      "summary": "Accès direct aux audits PageSpeed Insights mobile et bureau, avec capitalisation des résultats dans le processus de validation Web.",
+      "acceptance": [
+        "Les boutons Mobile et Bureau ciblent l’URL publique de nLab Webmaster Preview, et non la page GitHub du dépôt.",
+        "Aucun audit ni appel PageSpeed n’est déclenché automatiquement au chargement.",
+        "Le benchmark conserve la version, le commit, l’URL testée, la date et la médiane de plusieurs exécutions.",
+        "Les résultats couvrent performance, accessibilité, bonnes pratiques, SEO, métriques, requêtes et ressources bloquant le rendu."
+      ],
+      "previews": [
+        {
+          "label": "Lighthouse · Mobile",
+          "url": "https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fnepheris.github.io%2FnLab-Webmaster-Preview%2F&form_factor=mobile&hl=fr-FR",
+          "kind": "external"
+        },
+        {
+          "label": "Lighthouse · Bureau",
+          "url": "https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fnepheris.github.io%2FnLab-Webmaster-Preview%2F&form_factor=desktop&hl=fr-FR",
+          "kind": "external"
         }
       ]
     }
