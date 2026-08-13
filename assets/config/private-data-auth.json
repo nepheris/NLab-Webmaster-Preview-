@@ -1,0 +1,11 @@
+{
+  "mode": "github-app",
+  "status": "configuration_required",
+  "client_id": "",
+  "callback_url": "https://nepheris.github.io/nLab-Webmaster-Preview/",
+  "private_repository": "nepheris/nLab-Webmaster",
+  "private_repository_id": 1330178228,
+  "test_path": "Data/poc/private-access-test.json",
+  "required_repository_permission": "contents:read",
+  "notes": "Configuration publique sans secret. Le client_id sera renseigné après enregistrement de la GitHub App. Aucun client_secret, PAT ou jeton utilisateur ne doit être commité ici."
+}
