@@ -1,6 +1,6 @@
 import {$,$$,state,loadPrefs,loadSavedData,clearSavedData,icon,text,esc,savePrefs} from './core.js';
 import {settingsMarkup,initThemeUI,applyTheme} from './theme.js';
-import {searchMarkup,searchOverlayMarkup,initSearch,bindRenderedSearch,terms,resetSearch} from './search.js';
+import {searchOverlayMarkup,initSearch,bindRenderedSearch,terms,resetSearch} from './search.js';
 import {L,home,collection,helpMarkup,dataControlsMarkup,bindCommon,initHelp,initDataIO,section} from './ui.js';
 import {toolbarMarkup,initToolbar,captureSectionDefaults} from './toolbar.js';
 import {mountCollectionSearch} from './collection-search.js';
@@ -16,12 +16,19 @@ async function loadDefault(force=false){
   if(force)clearSavedData();return d;
 }
 function navMarkup(){return `<nav class="nav" aria-label="Navigation"><button class="btn" data-section="home">Accueil</button><button class="btn" data-section="recipes">Recettes</button><button class="btn" data-section="ingredients">Ingrédients</button><button class="btn" data-section="techniques">Techniques & astuces</button><button class="btn" data-section="equipment">Matériel</button><button class="btn" data-section="library">Bibliothèque</button><button class="btn" data-section="concept">Concept</button></nav>`}
-function shell(){document.body.innerHTML=`<header id="siteHeader" class="site-header"><div class="wrap"><div class="topbar"><div class="brand" id="brandHome"><span id="brandLogo" class="brand-logo brand-logo-emoji">🍽️</span><span>CuisineX</span></div>${searchMarkup()}<span class="grow"></span><div id="langSwitch" class="lang-switch"><button class="btn lang-btn" data-lang="fr">🇫🇷 <span>FR</span></button><button class="btn lang-btn" data-lang="en">🇬🇧 <span>EN</span></button></div><button class="icon-btn" id="openHelpHeader" title="Aide contextuelle">${icon('help')}</button><button class="icon-btn" id="openSettings" title="Paramètres">${icon('gear')}</button></div>${navMarkup()}</div></header><div id="collectionSearchHost" class="wrap"></div><main id="app" class="wrap"></main>${searchOverlayMarkup()}${settingsMarkup()}${helpMarkup()}${toolbarMarkup()}${qrMarkup()}<footer id="siteFooter"></footer>`}
-function localizedNav(){const map={home:'Accueil',recipes:L('recipes'),ingredients:L('ingredients'),techniques:L('techniques'),equipment:L('equipment'),library:L('library'),concept:'Concept'};$$('[data-section]').forEach(b=>{b.textContent=map[b.dataset.section]||b.dataset.section;b.classList.toggle('active',b.dataset.section===state.section)});$$('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===state.lang));document.documentElement.lang=state.lang}
+function languageMarkup(){return `<div id="langSwitch" class="lang-switch french-first"><button class="btn lang-source-btn" id="sourceLanguage" title="Français · langue source"><span class="lang-master-dot" aria-hidden="true"></span><span>🇫🇷</span><span>FR</span></button><label class="alternate-language" title="Choisir la langue de traduction"><span class="sr-only">Langue de traduction</span><select id="alternateLanguage" aria-label="Langue de traduction"><option value="en">🇬🇧 EN</option><option value="es">🇪🇸 ES</option></select></label></div>`}
+function shell(){document.body.innerHTML=`<header id="siteHeader" class="site-header"><div class="wrap"><div class="topbar"><div class="brand" id="brandHome"><span id="brandLogo" class="brand-logo brand-logo-emoji">🍽️</span><span>CuisineX</span></div><span class="grow"></span>${languageMarkup()}<button class="icon-btn" id="openHelpHeader" title="Aide contextuelle">${icon('help')}</button><button class="icon-btn" id="openSettings" title="Paramètres">${icon('gear')}</button></div>${navMarkup()}</div></header><div id="collectionSearchHost" class="wrap"></div><main id="app" class="wrap"></main>${searchOverlayMarkup()}${settingsMarkup()}${helpMarkup()}${toolbarMarkup()}${qrMarkup()}<footer id="siteFooter"></footer>`}
+function localizedNav(){
+  const map={home:'Accueil',recipes:L('recipes'),ingredients:L('ingredients'),techniques:L('techniques'),equipment:L('equipment'),library:L('library'),concept:'Concept'};
+  $$('[data-section]').forEach(b=>{b.textContent=map[b.dataset.section]||b.dataset.section;b.classList.toggle('active',b.dataset.section===state.section)});
+  $('#sourceLanguage')?.classList.toggle('active',state.lang==='fr');
+  const alt=$('#alternateLanguage');if(alt){if(state.lang!=='fr')alt.value=state.lang;else alt.value=state.prefs.secondaryLanguage||'en';alt.classList.toggle('active',state.lang!=='fr')}
+  document.documentElement.lang=state.lang;
+}
 function globalSearchView(){const ts=terms();if(!ts.length||state.searchContext!=='global')return null;const groups=['recipes','ingredients','techniques','equipment','library'].filter(t=>state.prefs.searchScopes.includes(t));return `<div class="panel search-results-head"><h1>${L('search')} globale</h1><p class="muted">${ts.map(t=>`#${esc(t)}`).join(' · ')}</p><button class="btn" data-nav="home">← Accueil</button></div>${groups.map(t=>`<section class="section"><div class="section-head"><h2>${({recipes:L('recipes'),ingredients:L('ingredients'),techniques:L('techniques'),equipment:L('equipment'),library:L('library')})[t]}</h2></div><div class="section-body">${collection(t)}</div></section>`).join('')}`}
 function genericDetail(x){return `<button class="btn no-print" id="backToList">← ${L('back')}</button><div class="panel detail-head"><div>${x.status?`<button class="badge clickable ${x.status==='canonical'?'ok':'warn'}" data-status-filter="${esc(x.status)}">${esc(x.status)}</button>`:''}<span class="badge">${esc(x.id)}</span><h1>${esc(text(x.title||x.name))}</h1><p>${esc(text(x.summary||x.notes)||'')}</p></div><div class="detail-actions">${x.url?`<a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">Ouvrir ${icon('external')}</a>`:''}<button class="btn" data-open-qr>${icon('qr')} QR</button></div></div>${x.tags?section(`generic-${x.id}-tags`,'Tags',x.tags.map(t=>`<span class="badge">#${esc(t)}</span>`).join(' '),{open:false}):''}`}
 function syncUrl(){const u=new URL(location.href);['section','type','id','lang','q'].forEach(k=>u.searchParams.delete(k));u.searchParams.set('lang',state.lang);if(state.detail){u.searchParams.set('type',state.detail.type);u.searchParams.set('id',state.detail.id)}else u.searchParams.set('section',state.section);if(state.query)u.searchParams.set('q',state.query);history.replaceState(null,'',u)}
-function restoreFromUrl(){const p=new URLSearchParams(location.search),lang=p.get('lang'),type=p.get('type'),id=p.get('id'),sectionId=p.get('section'),q=p.get('q');if(lang&&state.prefs.languages?.[lang]!==false)state.lang=lang;if(type&&id)state.detail={type,id},state.section=type;else if(sectionId)state.section=sectionId;if(q){state.query=q;state.searchContext='global'}}
+function restoreFromUrl(){const p=new URLSearchParams(location.search),lang=p.get('lang'),type=p.get('type'),id=p.get('id'),sectionId=p.get('section'),q=p.get('q');if(lang==='fr'||(lang&&state.prefs.languages?.[lang]!==false))state.lang=lang;if(type&&id)state.detail={type,id},state.section=type;else if(sectionId)state.section=sectionId;if(q){state.query=q;state.searchContext='global'}}
 export function render(){
   localizedNav();applyTheme();const app=$('#app'),global=globalSearchView();
   if(global&&!state.detail)app.innerHTML=global;
@@ -31,9 +38,16 @@ export function render(){
   else app.innerHTML=`<div class="panel collection-heading"><h1>${({recipes:L('recipes'),ingredients:L('ingredients'),techniques:L('techniques'),equipment:L('equipment'),library:L('library')})[state.section]}</h1><p class="muted">Recherche, filtres, vues et pagination utilisent les mêmes composants partagés.</p></div>${collection(state.section)}`;
   bindCommon(render);bindRenderedSearch();mountCollectionSearch(render);initDataIO(loadDefault,render);bindShellEvents();captureSectionDefaults();syncUrl();
 }
+function setLanguage(lang){
+  if(lang!=='fr'&&state.prefs.languages?.[lang]===false)return;
+  state.lang=lang;
+  if(lang!=='fr')state.prefs.secondaryLanguage=lang;
+  savePrefs();render();
+}
 function bindShellEvents(){
   $$('[data-section]').forEach(b=>b.onclick=()=>{state.section=b.dataset.section;state.detail=null;state.page=1;state.searchContext='section';resetSearch({renderEvent:false});render()});
-  $$('.lang-btn').forEach(b=>b.onclick=()=>{state.lang=b.dataset.lang;state.prefs.defaultLanguage=state.lang;savePrefs();render()});
+  $('#sourceLanguage')?.addEventListener('click',()=>setLanguage('fr'));
+  $('#alternateLanguage')?.addEventListener('change',e=>setLanguage(e.target.value));
   $('#brandHome').onclick=()=>{state.section='home';state.detail=null;state.searchContext='section';resetSearch({renderEvent:false});render()};
   $$('[data-footer-nav]').forEach(a=>a.onclick=e=>{e.preventDefault();state.section=a.dataset.footerNav;state.detail=null;state.searchContext='section';resetSearch({renderEvent:false});render();scrollTo({top:0,behavior:'smooth'})});
 }
