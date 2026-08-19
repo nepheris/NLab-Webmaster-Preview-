@@ -45,7 +45,10 @@ export function bindRenderedSearch(){
 }
 export function initSearch(){
   syncButtons();bindRenderedSearch();
-  $('#searchConfigBtn').onclick=()=>openSearchConfig('global');$('#searchResetBtn').onclick=()=>{state.searchContext='global';resetSearch()};$('#closeSearchConfig').onclick=closeSearchConfig;$('#searchConfigReset').onclick=()=>resetSearch();
+  const headerConfig=$('#searchConfigBtn'),headerReset=$('#searchResetBtn');
+  if(headerConfig)headerConfig.onclick=()=>openSearchConfig('global');
+  if(headerReset)headerReset.onclick=()=>{state.searchContext='global';resetSearch()};
+  $('#closeSearchConfig')?.addEventListener('click',closeSearchConfig);$('#searchConfigReset')?.addEventListener('click',()=>resetSearch());
   $$('[data-search-mode]').forEach(b=>b.onclick=()=>{state.prefs.searchMode=b.dataset.searchMode;savePrefs();syncButtons();updateSuggestions();document.dispatchEvent(new CustomEvent('cuisinex:search-change'))});
   $$('[data-search-op]').forEach(b=>b.onclick=()=>{state.prefs.searchOperator=b.dataset.searchOp;savePrefs();syncButtons();document.dispatchEvent(new CustomEvent('cuisinex:search-change'))});
   $$('[data-search-scope]').forEach(b=>b.onclick=()=>{const k=b.dataset.searchScope,a=state.prefs.searchScopes;state.prefs.searchScopes=a.includes(k)?a.filter(x=>x!==k):[...a,k];if(!state.prefs.searchScopes.length){state.prefs.searchScopes=[k];toast('Au moins une section doit rester active')}savePrefs();syncButtons();document.dispatchEvent(new CustomEvent('cuisinex:search-change'))});
