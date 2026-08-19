@@ -1,13 +1,15 @@
 export const STORAGE={prefs:'cuisinex.preview.prefs.v4',data:'cuisinex.preview.data.v4'};
+export const UX_PREFS_VERSION=8;
 export const DEFAULT_WINDOWS={
   settings:{locked:false,docked:false,collapsed:false,scrollbars:true,position:null},
-  help:{locked:false,docked:true,collapsed:false,scrollbars:true,position:null},
+  help:{locked:true,docked:true,collapsed:false,scrollbars:true,position:null},
   search:{locked:false,docked:false,collapsed:false,scrollbars:true,position:null},
   qr:{locked:false,docked:false,collapsed:false,scrollbars:true,position:null},
   toolbar:{locked:true,docked:true,collapsed:false,position:null,dockX:.5}
 };
 export const DEFAULT_CONTEXT_THEME={enabled:false,scope:'item',global:{},types:{},items:{}};
 export const DEFAULT_PREFS={
+  uxPrefsVersion:UX_PREFS_VERSION,
   theme:'light',primary:'#2563eb',secondary:'#0ea5e9',systemColor:'#64748b',bg1:'#eef5ff',bg2:'#dcecff',
   gradientEnabled:true,gradientAngle:135,headerSticky:true,headerShadow:true,headerTransparent:false,searchShadow:true,
   footerMode:'minimal',toolbar:true,languages:{fr:true,en:true,es:true},sourceLanguage:'fr',secondaryLanguage:'en',defaultLanguage:'fr',
@@ -33,14 +35,15 @@ function mergePrefs(raw={}){
   if(raw.settingsLocked!=null)windows.settings.locked=!!raw.settingsLocked;
   if(raw.settingsDocked!=null)windows.settings.docked=!!raw.settingsDocked;
   if(raw.settingsPosition)windows.settings.position=raw.settingsPosition;
-  const merged={...DEFAULT_PREFS,...raw,languages:{...DEFAULT_PREFS.languages,...(raw.languages||{})},searchScopes:[...(raw.searchScopes||DEFAULT_PREFS.searchScopes)],ingredientSources:[...(raw.ingredientSources||DEFAULT_PREFS.ingredientSources)],windows,contextTheme:mergeContext(raw.contextTheme)};
+  if(Number(raw.uxPrefsVersion||0)<UX_PREFS_VERSION){windows.help.locked=true;windows.help.docked=true}
+  const merged={...DEFAULT_PREFS,...raw,uxPrefsVersion:UX_PREFS_VERSION,languages:{...DEFAULT_PREFS.languages,...(raw.languages||{})},searchScopes:[...(raw.searchScopes||DEFAULT_PREFS.searchScopes)],ingredientSources:[...(raw.ingredientSources||DEFAULT_PREFS.ingredientSources)],windows,contextTheme:mergeContext(raw.contextTheme)};
   merged.sourceLanguage='fr';merged.defaultLanguage='fr';merged.languages.fr=true;
   if(!merged.languages[merged.secondaryLanguage]||merged.secondaryLanguage==='fr')merged.secondaryLanguage=['en','es'].find(k=>merged.languages[k])||'en';
   return merged;
 }
 export function loadPrefs(){
   try{state.prefs=mergePrefs(JSON.parse(localStorage.getItem(STORAGE.prefs)||'{}'))}catch{state.prefs=mergePrefs()}
-  state.lang='fr';
+  state.lang='fr';localStorage.setItem(STORAGE.prefs,JSON.stringify(state.prefs));
   return state.prefs;
 }
 export function normalizePrefs(raw){return mergePrefs(raw)}
