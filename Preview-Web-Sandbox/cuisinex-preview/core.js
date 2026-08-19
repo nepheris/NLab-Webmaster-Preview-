@@ -1,8 +1,8 @@
 export const STORAGE={prefs:'cuisinex.preview.prefs.v4',data:'cuisinex.preview.data.v4'};
 export const DEFAULT_PREFS={
   theme:'light',primary:'#2563eb',secondary:'#0ea5e9',systemColor:'#64748b',bg1:'#eef5ff',bg2:'#dcecff',
-  gradientEnabled:true,gradientAngle:135,headerSticky:true,headerShadow:true,searchShadow:true,
-  footerMode:'minimal',toolbar:true,languages:{fr:true,en:true},defaultLanguage:'fr',
+  gradientEnabled:true,gradientAngle:135,headerSticky:true,headerShadow:true,headerTransparent:false,searchShadow:true,
+  footerMode:'minimal',toolbar:true,languages:{fr:true,en:true,es:true},sourceLanguage:'fr',secondaryLanguage:'en',defaultLanguage:'fr',
   view:'cards',pageSize:'auto',searchMode:'free',searchOperator:'and',
   searchScopes:['recipes','ingredients','techniques','equipment','library'],ingredientSources:['personal','ciqual'],
   settingsLocked:false,settingsDocked:false,settingsPosition:null,sectionPreset:'default',
@@ -19,10 +19,15 @@ export const text=value=>{
 };
 export const normalize=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export const uid=()=>Math.random().toString(36).slice(2,10);
-function mergePrefs(raw={}){return {...DEFAULT_PREFS,...raw,languages:{...DEFAULT_PREFS.languages,...(raw.languages||{})},searchScopes:[...(raw.searchScopes||DEFAULT_PREFS.searchScopes)],ingredientSources:[...(raw.ingredientSources||DEFAULT_PREFS.ingredientSources)]}}
+function mergePrefs(raw={}){
+  const merged={...DEFAULT_PREFS,...raw,languages:{...DEFAULT_PREFS.languages,...(raw.languages||{})},searchScopes:[...(raw.searchScopes||DEFAULT_PREFS.searchScopes)],ingredientSources:[...(raw.ingredientSources||DEFAULT_PREFS.ingredientSources)]};
+  merged.sourceLanguage='fr';merged.defaultLanguage='fr';merged.languages.fr=true;
+  if(!merged.languages[merged.secondaryLanguage]||merged.secondaryLanguage==='fr')merged.secondaryLanguage=['en','es'].find(k=>merged.languages[k])||'en';
+  return merged;
+}
 export function loadPrefs(){
   try{state.prefs=mergePrefs(JSON.parse(localStorage.getItem(STORAGE.prefs)||'{}'))}catch{state.prefs=mergePrefs()}
-  state.lang=state.prefs.defaultLanguage||'fr';
+  state.lang='fr';
   return state.prefs;
 }
 export function normalizePrefs(raw){return mergePrefs(raw)}
