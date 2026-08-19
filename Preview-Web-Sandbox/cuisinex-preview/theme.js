@@ -10,45 +10,58 @@ function applyLogo(){
     host.textContent=p.logoText||'🍽️';host.className='brand-logo brand-logo-emoji';
   }
 }
+function visibleAlternates(){return ['en','es'].filter(code=>state.prefs.languages?.[code]!==false)}
+function syncLanguageControls(){
+  state.prefs.languages.fr=true;
+  const alt=$('#alternateLanguage');
+  if(alt){
+    [...alt.options].forEach(o=>{o.hidden=state.prefs.languages?.[o.value]===false;o.disabled=state.prefs.languages?.[o.value]===false});
+    const allowed=visibleAlternates();
+    if(!allowed.includes(state.prefs.secondaryLanguage))state.prefs.secondaryLanguage=allowed[0]||'en';
+    alt.value=state.lang==='fr'?state.prefs.secondaryLanguage:state.lang;
+    alt.classList.toggle('active',state.lang!=='fr');
+  }
+  $('#sourceLanguage')?.classList.toggle('active',state.lang==='fr');
+}
 export function applyTheme(){
   const p=state.prefs,r=document.documentElement.style,b=document.body,h=$('#siteHeader');
   r.setProperty('--primary',p.primary);r.setProperty('--secondary',p.secondary);r.setProperty('--system',p.systemColor);r.setProperty('--bg1',p.bg1);r.setProperty('--bg2',p.bg2);r.setProperty('--gradient-angle',`${p.gradientAngle}deg`);
   b.classList.toggle('dark',p.theme==='dark'||(p.theme==='system'&&matchMedia('(prefers-color-scheme:dark)').matches));
   b.classList.toggle('no-gradient',!p.gradientEnabled);b.classList.toggle('search-shadow',!!p.searchShadow);
-  h?.classList.toggle('sticky',!!p.headerSticky);h?.classList.toggle('shadow',!!p.headerShadow);
+  h?.classList.toggle('sticky',!!p.headerSticky);h?.classList.toggle('shadow',!!p.headerShadow);h?.classList.toggle('transparent',!!p.headerTransparent);
   $('#quickTools')?.classList.toggle('hidden',!p.toolbar);
-  $$('.lang-btn').forEach(btn=>btn.classList.toggle('hidden',p.languages?.[btn.dataset.lang]===false));
-  applyLogo();renderFooter();
+  syncLanguageControls();applyLogo();renderFooter();
 }
 export function renderFooter(){
   const f=$('#siteFooter');if(!f)return;const mode=state.prefs.footerMode;
   f.className=`footer ${mode==='classic'?'classic':mode==='hidden'?'hidden-footer':'minimal'}`;
-  f.innerHTML=mode==='classic'?`<div class="wrap footer-inner"><div><strong><span class="footer-logo">${state.prefs.logoMode==='emoji'?(state.prefs.logoText||'🍽️'):'◆'}</span> CuisineX</strong><p>Laboratoire personnel de cuisine technique · P019</p></div><div class="footer-links"><a href="?section=concept" data-footer-nav="concept">Concept</a><a href="?section=legal" data-footer-nav="legal">Mentions légales</a></div></div>`:`<div class="wrap footer-inner"><span>CuisineX · MVP-004</span><span class="footer-links"><a href="?section=concept" data-footer-nav="concept">Concept</a><a href="?section=legal" data-footer-nav="legal">Mentions légales</a></span></div>`;
+  f.innerHTML=mode==='classic'?`<div class="wrap footer-inner"><div><strong><span class="footer-logo">${state.prefs.logoMode==='emoji'?(state.prefs.logoText||'🍽️'):'◆'}</span> CuisineX</strong><p>Laboratoire personnel de cuisine technique · P019</p></div><div class="footer-links"><a href="?section=concept" data-footer-nav="concept">Concept</a><a href="?section=legal" data-footer-nav="legal">Mentions légales</a></div></div>`:`<div class="wrap footer-inner"><span>CuisineX · MVP-005</span><span class="footer-links"><a href="?section=concept" data-footer-nav="concept">Concept</a><a href="?section=legal" data-footer-nav="legal">Mentions légales</a></span></div>`;
 }
 function syncForm(){
   const p=state.prefs;
-  ['theme','primary','secondary','systemColor','bg1','bg2','footerMode','logoMode','logoText','logoUrl'].forEach(k=>{const e=$(`#set-${k}`);if(e)e.value=p[k]??''});
-  ['headerSticky','headerShadow','searchShadow','toolbar','gradientEnabled'].forEach(k=>{const e=$(`#set-${k}`);if(e)e.checked=!!p[k]});
+  ['theme','primary','secondary','systemColor','bg1','bg2','footerMode','logoMode','logoText','logoUrl','secondaryLanguage'].forEach(k=>{const e=$(`#set-${k}`);if(e)e.value=p[k]??''});
+  ['headerSticky','headerShadow','headerTransparent','searchShadow','toolbar','gradientEnabled'].forEach(k=>{const e=$(`#set-${k}`);if(e)e.checked=!!p[k]});
   const a=$('#set-gradientAngle');if(a)a.value=p.gradientAngle;
   $$('[data-lang-visible]').forEach(e=>e.checked=p.languages?.[e.dataset.langVisible]!==false);
-  const d=$('#set-defaultLanguage');if(d)d.value=p.defaultLanguage||'fr';
   $('#pinSettings')?.classList.toggle('active',!!p.settingsLocked);$('#dockSettings')?.classList.toggle('active',!!p.settingsDocked);
 }
 function readForm(){
   const p=state.prefs;
   p.theme=$('#set-theme').value;p.primary=$('#set-primary').value;p.secondary=$('#set-secondary').value;p.systemColor=$('#set-systemColor').value;p.bg1=$('#set-bg1').value;p.bg2=$('#set-bg2').value;
   p.gradientEnabled=$('#set-gradientEnabled').checked;p.gradientAngle=Number($('#set-gradientAngle').value)||135;
-  p.headerSticky=$('#set-headerSticky').checked;p.headerShadow=$('#set-headerShadow').checked;p.searchShadow=$('#set-searchShadow').checked;p.toolbar=$('#set-toolbar').checked;
-  p.footerMode=$('#set-footerMode').value;p.defaultLanguage=$('#set-defaultLanguage').value;p.logoMode=$('#set-logoMode').value;p.logoText=$('#set-logoText').value;p.logoUrl=$('#set-logoUrl').value.trim();
-  p.languages={};$$('[data-lang-visible]').forEach(e=>p.languages[e.dataset.langVisible]=e.checked);applyTheme();
+  p.headerSticky=$('#set-headerSticky').checked;p.headerShadow=$('#set-headerShadow').checked;p.headerTransparent=$('#set-headerTransparent').checked;p.searchShadow=$('#set-searchShadow').checked;p.toolbar=$('#set-toolbar').checked;
+  p.footerMode=$('#set-footerMode').value;p.logoMode=$('#set-logoMode').value;p.logoText=$('#set-logoText').value;p.logoUrl=$('#set-logoUrl').value.trim();
+  p.languages={fr:true};$$('[data-lang-visible]').forEach(e=>p.languages[e.dataset.langVisible]=e.checked);
+  const requested=$('#set-secondaryLanguage').value;const allowed=visibleAlternates();p.secondaryLanguage=allowed.includes(requested)?requested:(allowed[0]||'en');p.sourceLanguage='fr';p.defaultLanguage='fr';
+  applyTheme();
 }
 export function settingsMarkup(){return `<aside id="settingsPanel" class="floating-panel" aria-hidden="true"><div id="settingsHandle" class="floating-head"><strong>⚙ Paramètres CuisineX</strong><button class="mini-btn" id="pinSettings" title="Verrouiller la fenêtre à sa position">${icon('pin')}</button><button class="mini-btn" id="dockSettings" title="Ancrer / docker à droite">${icon('anchor')}</button><button class="mini-btn" id="closeSettings" title="Fermer">${icon('close')}</button></div><div class="floating-body">
   <div class="field"><label>Mode du thème</label><select id="set-theme"><option value="light">Clair</option><option value="dark">Sombre</option><option value="system">Système</option></select></div>
   <div class="two-col"><label class="field">Primaire<input id="set-primary" type="color"></label><label class="field">Secondaire<input id="set-secondary" type="color"></label><label class="field">Système<input id="set-systemColor" type="color"></label><label class="field">Fond A<input id="set-bg1" type="color"></label><label class="field">Fond B<input id="set-bg2" type="color"></label></div>
   <div class="check-grid"><label><input id="set-gradientEnabled" type="checkbox"> Dégradés actifs</label><label class="field range-field">Angle du dégradé <input id="set-gradientAngle" type="range" min="0" max="360" step="5"></label></div>
-  <hr><div class="check-grid"><label><input id="set-headerSticky" type="checkbox"> Header sticky</label><label><input id="set-headerShadow" type="checkbox"> Ombre du header</label><label><input id="set-searchShadow" type="checkbox"> Ombre des barres de recherche</label><label><input id="set-toolbar" type="checkbox"> Barre d’outils basse</label></div>
+  <hr><strong>Header</strong><div class="check-grid"><label><input id="set-headerSticky" type="checkbox"> Sticky</label><label><input id="set-headerShadow" type="checkbox"> Ombre</label><label><input id="set-headerTransparent" type="checkbox"> Transparent</label><label><input id="set-searchShadow" type="checkbox"> Ombre des barres de recherche</label><label><input id="set-toolbar" type="checkbox"> Barre d’outils basse</label></div>
   <div class="field"><label>Footer</label><select id="set-footerMode"><option value="minimal">Discret</option><option value="classic">Classique marqué</option><option value="hidden">Masqué</option></select></div>
-  <hr><strong>Langues visibles</strong><div class="check-grid"><label><input type="checkbox" data-lang-visible="fr"> 🇫🇷 Français</label><label><input type="checkbox" data-lang-visible="en"> 🇬🇧 English</label></div><div class="field"><label>Langue par défaut</label><select id="set-defaultLanguage"><option value="fr">🇫🇷 Français</option><option value="en">🇬🇧 English</option></select></div>
+  <hr><strong>Langues</strong><p class="muted small">🇫🇷 Français = langue source du site, toujours disponible. Le deuxième contrôle du header choisit une traduction.</p><div class="check-grid"><label><input type="checkbox" data-lang-visible="en"> 🇬🇧 English</label><label><input type="checkbox" data-lang-visible="es"> 🇪🇸 Español</label></div><div class="field"><label>Langue secondaire du header</label><select id="set-secondaryLanguage"><option value="en">🇬🇧 English</option><option value="es">🇪🇸 Español</option></select></div>
   <hr><strong>Logo</strong><div class="field"><label>Type</label><select id="set-logoMode"><option value="emoji">Emoji / placeholder</option><option value="image">Image</option></select></div><div class="field"><label>Emoji</label><input id="set-logoText" type="text" maxlength="4" placeholder="🍽️"></div><div class="field"><label>Chemin image</label><input id="set-logoUrl" type="text" placeholder="./assets/logo/cuisinex.svg"></div>
   <hr><div class="settings-actions"><button class="btn" id="saveTheme">${icon('save')} Enregistrer</button><button class="btn primary" id="saveCloseTheme">${icon('save')} Enregistrer & fermer</button><button class="btn" id="exportTheme">${icon('download')} Exporter thème</button><button class="btn" id="importTheme">${icon('upload')} Charger thème</button><button class="btn" id="resetTheme">${icon('reset')} Réinitialiser</button><input id="themeFile" type="file" accept="application/json,.json" hidden></div>
 </div></aside>`}
@@ -72,7 +85,7 @@ export function initThemeUI(){
   panel.addEventListener('input',e=>{if(e.target.matches('input,select')){readForm();savePrefs()}});panel.addEventListener('change',e=>{if(e.target.matches('input,select')){readForm();savePrefs()}});
   $('#saveTheme').onclick=()=>{readForm();savePrefs();toast('Thème enregistré localement')};
   $('#saveCloseTheme').onclick=()=>{readForm();savePrefs();panel.classList.remove('open');panel.setAttribute('aria-hidden','true');toast('Thème enregistré localement')};
-  $('#exportTheme').onclick=()=>downloadJSON(`cuisinex-theme-${Date.now()}.json`,{schema:'cuisinex-theme@2',prefs:state.prefs});
+  $('#exportTheme').onclick=()=>downloadJSON(`cuisinex-theme-${Date.now()}.json`,{schema:'cuisinex-theme@3',prefs:state.prefs});
   $('#importTheme').onclick=()=>$('#themeFile').click();$('#themeFile').onchange=async e=>{try{const json=await readJSONFile(e.target.files[0]);state.prefs=normalizePrefs(json.prefs||json);savePrefs();applyPanelState(panel);applyTheme();toast('Thème chargé')}catch{toast('JSON de thème invalide')}};
   $('#resetTheme').onclick=()=>{state.prefs=normalizePrefs(DEFAULT_PREFS);savePrefs();applyPanelState(panel);applyTheme();toast('Thème réinitialisé')};
 }
