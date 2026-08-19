@@ -1,20 +1,21 @@
 export const STORAGE={prefs:'cuisinex.preview.prefs.v4',data:'cuisinex.preview.data.v4'};
 export const DEFAULT_WINDOWS={
-  settings:{locked:false,docked:false,collapsed:false,position:null},
-  help:{locked:false,docked:true,collapsed:false,position:null},
-  search:{locked:false,docked:false,collapsed:false,position:null},
-  qr:{locked:false,docked:false,collapsed:false,position:null},
-  toolbar:{locked:true,docked:true,collapsed:false,position:null}
+  settings:{locked:false,docked:false,collapsed:false,scrollbars:true,position:null},
+  help:{locked:false,docked:true,collapsed:false,scrollbars:true,position:null},
+  search:{locked:false,docked:false,collapsed:false,scrollbars:true,position:null},
+  qr:{locked:false,docked:false,collapsed:false,scrollbars:true,position:null},
+  toolbar:{locked:true,docked:true,collapsed:false,position:null,dockX:.5}
 };
+export const DEFAULT_CONTEXT_THEME={enabled:false,scope:'item',global:{},types:{},items:{}};
 export const DEFAULT_PREFS={
   theme:'light',primary:'#2563eb',secondary:'#0ea5e9',systemColor:'#64748b',bg1:'#eef5ff',bg2:'#dcecff',
   gradientEnabled:true,gradientAngle:135,headerSticky:true,headerShadow:true,headerTransparent:false,searchShadow:true,
   footerMode:'minimal',toolbar:true,languages:{fr:true,en:true,es:true},sourceLanguage:'fr',secondaryLanguage:'en',defaultLanguage:'fr',
   view:'cards',pageSize:'auto',searchMode:'free',searchOperator:'and',
   searchScopes:['recipes','ingredients','techniques','equipment','library'],ingredientSources:['personal','ciqual'],
-  sectionPreset:'default',logoMode:'emoji',logoText:'🍽️',logoUrl:'',windows:DEFAULT_WINDOWS
+  sectionPreset:'default',logoMode:'emoji',logoText:'🍽️',logoUrl:'',windows:DEFAULT_WINDOWS,contextTheme:DEFAULT_CONTEXT_THEME
 };
-export const state={data:null,lang:'fr',section:'home',detail:null,query:'',tokens:[],searchContext:'global',statusFilter:null,page:1,prefs:null,help:null};
+export const state={data:null,lang:'fr',section:'home',detail:null,query:'',tokens:[],searchContext:'global',statusFilter:null,page:1,prefs:null,help:null,themeTarget:null};
 export const $=(s,r=document)=>r.querySelector(s);
 export const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 export const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c));
@@ -26,12 +27,13 @@ export const text=value=>{
 export const normalize=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export const uid=()=>Math.random().toString(36).slice(2,10);
 function mergeWindows(raw={}){const out={};for(const [k,v] of Object.entries(DEFAULT_WINDOWS))out[k]={...v,...(raw?.[k]||{})};return out}
+function mergeContext(raw={}){return {...DEFAULT_CONTEXT_THEME,...raw,global:{...(raw.global||{})},types:{...(raw.types||{})},items:{...(raw.items||{})}}}
 function mergePrefs(raw={}){
   const windows=mergeWindows(raw.windows);
   if(raw.settingsLocked!=null)windows.settings.locked=!!raw.settingsLocked;
   if(raw.settingsDocked!=null)windows.settings.docked=!!raw.settingsDocked;
   if(raw.settingsPosition)windows.settings.position=raw.settingsPosition;
-  const merged={...DEFAULT_PREFS,...raw,languages:{...DEFAULT_PREFS.languages,...(raw.languages||{})},searchScopes:[...(raw.searchScopes||DEFAULT_PREFS.searchScopes)],ingredientSources:[...(raw.ingredientSources||DEFAULT_PREFS.ingredientSources)],windows};
+  const merged={...DEFAULT_PREFS,...raw,languages:{...DEFAULT_PREFS.languages,...(raw.languages||{})},searchScopes:[...(raw.searchScopes||DEFAULT_PREFS.searchScopes)],ingredientSources:[...(raw.ingredientSources||DEFAULT_PREFS.ingredientSources)],windows,contextTheme:mergeContext(raw.contextTheme)};
   merged.sourceLanguage='fr';merged.defaultLanguage='fr';merged.languages.fr=true;
   if(!merged.languages[merged.secondaryLanguage]||merged.secondaryLanguage==='fr')merged.secondaryLanguage=['en','es'].find(k=>merged.languages[k])||'en';
   return merged;
@@ -73,7 +75,11 @@ export function icon(name){const paths={
   local:'<path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/>',
   reset:'<path d="M4 7v5h5"/><path d="M5 12a7 7 0 1 0 2-5"/>',
   image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m4 18 5-5 4 4 2-2 5 5"/>',
-  qr:'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-6v-2M14 18h2"/>'
+  qr:'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-6v-2M14 18h2"/>',
+  grip:'<path d="M8 7h.01M12 7h.01M16 7h.01M8 12h.01M12 12h.01M16 12h.01M8 17h.01M12 17h.01M16 17h.01" stroke-width="3"/>',
+  palette:'<path d="M12 3a9 9 0 1 0 0 18h1.2a1.8 1.8 0 0 0 1.3-3l-.5-.5a1.5 1.5 0 0 1 1.1-2.5H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8Z"/><circle cx="7.5" cy="10" r=".8"/><circle cx="10" cy="6.8" r=".8"/><circle cx="14" cy="6.5" r=".8"/><circle cx="17" cy="9.5" r=".8"/>',
+  scrollbars:'<path d="M5 4v16M19 4v16M8 6h8M8 18h8"/><path d="m10 9-2-3 2-3M14 15l2 3-2 3"/>',
+  burger:'<path d="M4 6h16M4 12h16M4 18h16"/>'
 };return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]||''}</svg>`}
 export function formatDuration(min){const n=Number(min)||0,h=Math.floor(n/60),m=n%60;return h?`${h} h${m?` ${m} min`:''}`:`${m} min`}
 export function allObjects(){if(!state.data)return[];const types=['recipes','ingredients','techniques','equipment','library','trials'];return types.flatMap(type=>(state.data[type]||[]).map(x=>({...x,__type:type})))}
