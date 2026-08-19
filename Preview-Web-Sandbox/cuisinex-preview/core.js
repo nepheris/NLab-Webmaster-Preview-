@@ -1,12 +1,18 @@
 export const STORAGE={prefs:'cuisinex.preview.prefs.v4',data:'cuisinex.preview.data.v4'};
+export const DEFAULT_WINDOWS={
+  settings:{locked:false,docked:false,collapsed:false,position:null},
+  help:{locked:false,docked:true,collapsed:false,position:null},
+  search:{locked:false,docked:false,collapsed:false,position:null},
+  qr:{locked:false,docked:false,collapsed:false,position:null},
+  toolbar:{locked:true,docked:true,collapsed:false,position:null}
+};
 export const DEFAULT_PREFS={
   theme:'light',primary:'#2563eb',secondary:'#0ea5e9',systemColor:'#64748b',bg1:'#eef5ff',bg2:'#dcecff',
   gradientEnabled:true,gradientAngle:135,headerSticky:true,headerShadow:true,headerTransparent:false,searchShadow:true,
   footerMode:'minimal',toolbar:true,languages:{fr:true,en:true,es:true},sourceLanguage:'fr',secondaryLanguage:'en',defaultLanguage:'fr',
   view:'cards',pageSize:'auto',searchMode:'free',searchOperator:'and',
   searchScopes:['recipes','ingredients','techniques','equipment','library'],ingredientSources:['personal','ciqual'],
-  settingsLocked:false,settingsDocked:false,settingsPosition:null,sectionPreset:'default',
-  logoMode:'emoji',logoText:'🍽️',logoUrl:''
+  sectionPreset:'default',logoMode:'emoji',logoText:'🍽️',logoUrl:'',windows:DEFAULT_WINDOWS
 };
 export const state={data:null,lang:'fr',section:'home',detail:null,query:'',tokens:[],searchContext:'global',statusFilter:null,page:1,prefs:null,help:null};
 export const $=(s,r=document)=>r.querySelector(s);
@@ -19,8 +25,13 @@ export const text=value=>{
 };
 export const normalize=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 export const uid=()=>Math.random().toString(36).slice(2,10);
+function mergeWindows(raw={}){const out={};for(const [k,v] of Object.entries(DEFAULT_WINDOWS))out[k]={...v,...(raw?.[k]||{})};return out}
 function mergePrefs(raw={}){
-  const merged={...DEFAULT_PREFS,...raw,languages:{...DEFAULT_PREFS.languages,...(raw.languages||{})},searchScopes:[...(raw.searchScopes||DEFAULT_PREFS.searchScopes)],ingredientSources:[...(raw.ingredientSources||DEFAULT_PREFS.ingredientSources)]};
+  const windows=mergeWindows(raw.windows);
+  if(raw.settingsLocked!=null)windows.settings.locked=!!raw.settingsLocked;
+  if(raw.settingsDocked!=null)windows.settings.docked=!!raw.settingsDocked;
+  if(raw.settingsPosition)windows.settings.position=raw.settingsPosition;
+  const merged={...DEFAULT_PREFS,...raw,languages:{...DEFAULT_PREFS.languages,...(raw.languages||{})},searchScopes:[...(raw.searchScopes||DEFAULT_PREFS.searchScopes)],ingredientSources:[...(raw.ingredientSources||DEFAULT_PREFS.ingredientSources)],windows};
   merged.sourceLanguage='fr';merged.defaultLanguage='fr';merged.languages.fr=true;
   if(!merged.languages[merged.secondaryLanguage]||merged.secondaryLanguage==='fr')merged.secondaryLanguage=['en','es'].find(k=>merged.languages[k])||'en';
   return merged;
@@ -35,10 +46,7 @@ export function savePrefs(){localStorage.setItem(STORAGE.prefs,JSON.stringify(st
 export function loadSavedData(){try{return JSON.parse(localStorage.getItem(STORAGE.data)||'null')}catch{return null}}
 export function saveData(){if(state.data)localStorage.setItem(STORAGE.data,JSON.stringify(state.data));}
 export function clearSavedData(){localStorage.removeItem(STORAGE.data);}
-export function downloadJSON(filename,obj){
-  const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500);
-}
+export function downloadJSON(filename,obj){const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500)}
 export function readJSONFile(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>{try{resolve(JSON.parse(r.result))}catch(e){reject(e)}};r.onerror=reject;r.readAsText(file,'utf-8')})}
 export function toast(message){let n=$('.toast');if(n)n.remove();n=document.createElement('div');n.className='toast';n.textContent=message;document.body.append(n);setTimeout(()=>n.remove(),2200)}
 export function icon(name){const paths={
@@ -49,10 +57,14 @@ export function icon(name){const paths={
   close:'<path d="M6 6l12 12M18 6 6 18"/>',
   pin:'<path d="m14 4 6 6-3 1-4 4-1 5-3-3-5-5 5-1 4-4 1-3Z"/>',
   anchor:'<circle cx="12" cy="5" r="2"/><path d="M12 7v13M5 12H2a10 10 0 0 0 20 0h-3M8 20h8"/>',
+  lock:'<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v2"/>',
+  unlock:'<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 7-2.6M12 14v2"/>',
+  minimize:'<path d="M6 12h12"/>',
+  maximize:'<path d="m7 14 5-5 5 5"/>',
   save:'<path d="M5 4h12l2 2v14H5z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/>',
   upload:'<path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 14v6h16v-6"/>',
   download:'<path d="M12 4v12M8 12l4 4 4-4"/><path d="M4 18v2h16v-2"/>',
-  up:'<path d="m6 14 6-6 6 6"/>',
+  top:'<path d="M5 5h14M12 20V8M8 12l4-4 4 4"/>',
   expand:'<path d="m7 10 5 5 5-5"/>',
   collapse:'<path d="m7 14 5-5 5 5"/>',
   mixed:'<path d="M5 8h14M8 12h8M5 16h14"/>',
@@ -64,5 +76,5 @@ export function icon(name){const paths={
   qr:'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-6v-2M14 18h2"/>'
 };return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]||''}</svg>`}
 export function formatDuration(min){const n=Number(min)||0,h=Math.floor(n/60),m=n%60;return h?`${h} h${m?` ${m} min`:''}`:`${m} min`}
-export function allObjects(){if(!state.data)return[];const types=['recipes','ingredients','techniques','equipment','library','trials'];return types.flatMap(type=>(state.data[type]||[]).map(x=>({...x,__type:type})));}
-export function findObject(type,id){return (state.data?.[type]||[]).find(x=>x.id===id)||null;}
+export function allObjects(){if(!state.data)return[];const types=['recipes','ingredients','techniques','equipment','library','trials'];return types.flatMap(type=>(state.data[type]||[]).map(x=>({...x,__type:type})))}
+export function findObject(type,id){return (state.data?.[type]||[]).find(x=>x.id===id)||null}
